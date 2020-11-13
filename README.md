@@ -1,7 +1,7 @@
 # Dagor-Brushless-Controller
 ESP32 based brushless motor controller for robotics applications. The Dagor Brushless controller has an on-board magnetic encoder, a three-phase MOSFET driver, three MOSFET half-bridges, a temperature sensor and current sensing resistors. 
 
-![Board](Images/Dagor 2.1.png)
+![DagorBoard](Images/Dagor 2.1.png)
 
 ## Key specs
 | Specification    | Rating          |
@@ -10,7 +10,7 @@ ESP32 based brushless motor controller for robotics applications. The Dagor Brus
 | Power source voltage      | 5-24V |
 | Peak current   | up to 40A |
 | Magnetic sensor resolution | 14 bits |
-| Temperature sensor range | -10 ~ 120°C |
+| Temperature sensor range | -10 ~ 120Â°C |
 
 ## Set-up
 
