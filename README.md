@@ -1,12 +1,12 @@
 ﻿# Dagor-Brushless-Controller
 ESP32 based brushless motor controller for robotics applications. The Dagor Brushless controller has an on-board magnetic encoder, a three-phase MOSFET driver, three MOSFET half-bridges, a temperature sensor and current sensing resistors. 
 
-![DagorBoard](Images/Dagor 2.1.PNG)
+![DagorBoard](Images/Dagor2.1.png)
 
 ## Key specs
 | Specification    | Rating          |
 | ------------- |:-------------:|
-| Dimensions      | 44 x 4mm |
+| Dimensions      | 44 x 44mm |
 | Power source voltage      | 5-24V |
 | Peak current   | up to 40A |
 | Magnetic sensor resolution | 14 bits |
@@ -33,9 +33,9 @@ The Dagor board has a buck converter that regulates the input voltage to 3.3V to
 
 ## 2. Getting started
 The example code was done in the Arduino IDE, running the [SimpleFOC](https://simplefoc.com) Arduino Library. By changing a simple parameter, this code allows you to control position and velocity of your burshless motor, or setting a voltage as you would do with a DC motor. 
-Make sure you follow the following steps to make sure the code will compile.
+Make sure you follow the next steps to make sure the code will compile.
 
-### 2.1 ESP32 set-up
+### 2.1 Arduino IDE/ ESP32 set-up
 *Random nerd tutorials* have a really easy to follow guide on how to set-up the ESP32 on the Arduino IDE. Follow the steps on [this link](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/) and make sure you can compile one of the examples shown.
 
 ### 2.2 ESP32 flash-mode
@@ -51,8 +51,7 @@ The [SimpleFOC](https://github.com/simplefoc) repository has an extremely detail
 ### 2.4 Running the position control example
 Download the [position control example code](D021F010/D021F010.ino) and open it on your Arduino IDE; there are a few parameters that you might have to tweak. I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
 
-## Contact
-I'm happy to hear from your projects and to help in any way possible!  
+## Contact 
 davidglzrys@gmail.com  
 [Linkedin](https://www.linkedin.com/in/david-g-reyes/)  
 [YouTube](https://www.youtube.com/channel/UC4gsPZan2T4v5LpJ5J_t7sQ/featured)
