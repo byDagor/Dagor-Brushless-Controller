@@ -1,7 +1,7 @@
 ﻿# Dagor-Brushless-Controller
 ESP32 based brushless motor controller for robotics applications. The Dagor Brushless controller has an on-board magnetic encoder, a three-phase MOSFET driver, three MOSFET half-bridges, a temperature sensor and current sensing resistors. 
 
-There will be an alpha run of the board soon, if you're interested please fill this forms: 
+There will be an alpha run of the board soon, if you're interested please fill this forms: https://forms.gle/S7gtZfyXZeQ7XbT29
 
 ![DagorBoard](Images/Dagor2.1.png)
 
