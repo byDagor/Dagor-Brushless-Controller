@@ -1,9 +1,13 @@
-//Dagor 2.1 Brushless Controller Firmware 010 with ESP-NOW communication
+//Dagor 2.1 Brushless Controller Firmware 022 (Includes current sensing)
 
-#include "SimpleFOC.h"
+//SimpleFOC Version 2.0.1
+#include <SimpleFOC.h>
 #include <SPI.h>
 #include <esp_now.h>
 #include <WiFi.h>
+#include "driver/mcpwm.h"
+#include "soc/mcpwm_reg.h"
+#include "soc/mcpwm_struct.h"
 
 //######_ESPNOW_######
 typedef struct struct_message {
@@ -12,43 +16,42 @@ typedef struct struct_message {
 } struct_message;
 
 struct_message dagorData;
- 
+
 //#######_DRV8305_########
 //Datasheet: www.ti.com/lit/ds/symlink/drv8305.pdf
 #define enGate 2       //Chip Enable
 #define nFault 4       //Fault reading
+#define cs 5           //DRV8305 Chip-select
 #define so1 36
 #define so2 35
 #define so3 34
-int a1, a2, a3;         //Current readings from internal current sensor amplifiers
 bool faultTrig = false;
 
-//#####_SPI_#######
-#define cs 5      //Chip-select
+//####_CURRENT READING_####
+static mcpwm_dev_t *MCPWM[2] = {&MCPWM0, &MCPWM1};
+static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
+int a1, a2, a3;         //Current readings from internal current sensor amplifiers
+static void IRAM_ATTR isr_handler(void*);
+byte currentState = 1;
 
 //######_AS5147_######
+#define sensorCS 16             //AS5147 Chip-select
 //A and B encoder inputs
 //#define arduinoInt1 32             // interrupt 0
 //#define arduinoInt2 33             // interrupt 1
 
-//######_TEMPERATURE_######
+//######_TEMPERATURE SENSOR_######
 #define vTemp 39
 
 //#####_TIME MANAGEMENT_#####
 float runTime, prevT = 0, timeDif, stateT;
-int timeInterval = 1000;
+int timeInterval = 1000, totalTempTime;
 
-//####_BLDC_MOTOR_####
-//  BLDCMotor instance
-BLDCMotor motor = BLDCMotor(25, 26, 27, 7);
-
-//####_ENCODER_####
-// SPI Magnetic sensor instance (AS5147P example)
-// MISO 12, MOSI 9, SCK 14
-MagneticSensorSPI sensor = MagneticSensorSPI(16, 14, 0x3FFF);
-
-// encoder instance
-//Encoder sensor = Encoder(4, 2, 1024);
+//####_SIMPLEFOC INSTANCES_####
+BLDCMotor motor = BLDCMotor(7);   //BLDCMotor instance
+BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27);     //3PWM Driver instance
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);       //SPI Magnetic sensor instance
+//Encoder sensor = Encoder(4, 2, 1024);       // Quadrature encoder instance
 
 // Interrupt routine intialisation
 // channel A and B callbacks
@@ -56,30 +59,21 @@ MagneticSensorSPI sensor = MagneticSensorSPI(16, 14, 0x3FFF);
 //void doB(){sensor.handleB();}
 
 //#####_System Gains_#####
-float ki = 0.0015; //0.075;
-float ti = 2.0; //0.0075;
+float ki = 0.002; //0.075;
+float ti = 2.5; //0.0075;
 float lpFilter = 0.000;
 float kp = 10; //15;
-float voltageRamp = 20;
-float voltageLimit = 0.8;
+float voltageRamp = 25;
+float voltageLimit = 1.0;
 float velocityLimit = 2000;
 
-// Variables for the Modified Moving Average
-float movingAverage;
-float movingAverageSum;
-const byte averageCount = 20;
-
+//--------------------------------------------Set-up--------------------------------------------
 void setup() {
   Serial.begin(115200);
 
- //Initialise magnetic sensor hardware
-  sensor.init();
-
-  //If using encoder
-  //sensor.enableInterrupts(doA, doB); 
-  
-  //Link the motor to the sensor
-  motor.linkSensor(&sensor);
+  analogSetCycles(2);
+  //analogReadResolution(11);
+  //analogSetWidth(11);
 
   //Pinmodes
   pinMode(15,OUTPUT);
@@ -102,23 +96,40 @@ void setup() {
   delay(250);
   Serial.println("DRV8305 INIT");
   drv_init();
-  delay(500);
+  _delay(500);
 
   Serial.println("enGate Enabled");
   digitalWrite(enGate, HIGH);
-  delay(500);
+  _delay(500);
 
-  //BLDC motor initialization
-  motor.voltage_power_supply = 12;
-  // aligning voltage
-  motor.voltage_sensor_align = 0.5;
+  Serial.println("ESP-NOW init");
+  espNowInit();
+   _delay(500);
+
+  //Initialise magnetic sensor hardware
+  sensor.init();
+
+  //If using encoder
+  //sensor.enableInterrupts(doA, doB); 
+  
+  //Link the motor to the sensor
+  motor.linkSensor(&sensor);
+  
+  // driver config, power supply voltage [V]
+  driver.voltage_power_supply = 12;
+  driver.init();
+  motor.linkDriver(&driver);
 
   // set FOC loop to be used: ControlType::voltage, velocity, angle
   motor.controller = ControlType::angle;
+
+  // Sensor aligning voltage
+  motor.voltage_sensor_align = 0.5;
   
   // velocity PI controller parameters, default K=0.5 Ti = 0.01
   motor.PID_velocity.P = ki;
   motor.PID_velocity.I = ti;
+  motor.PID_velocity.D = 0;
   motor.voltage_limit = voltageLimit;
   motor.LPF_velocity.Tf = lpFilter;
   
@@ -127,21 +138,22 @@ void setup() {
   // maximal velocity of the poisition control, default 20
   motor.velocity_limit = velocityLimit;
 
-  // use monitoring functionality
-  motor.useMonitoring(Serial);
-  // initialise motor
-  motor.init();
-  // align encoder and start FOC
-  //motor.initFOC(5.2,CCW);
-  motor.initFOC(4.48,CW);
+  motor.useMonitoring(Serial);      // use monitoring functionality
+  motor.init();                     // initialise motor
+  motor.initFOC(4.5,CW);            // align sensor/ encoder and start FOC
+  //motor.initFOC();
   Serial.println("Ready BLDC.");
   
-  _delay(1000);
-  //Serial.println(motor.zero_electric_angle);
-  espNowInit();
+  _delay(500);
+  Serial.println(motor.zero_electric_angle);
+
+  MCPWM[MCPWM_UNIT_0]->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
+  MCPWM[MCPWM_UNIT_0]->int_ena.timer1_tep_int_ena = true;//A PWM timer 1 TEP event will trigger this interrupt
+  MCPWM[MCPWM_UNIT_0]->int_ena.timer2_tep_int_ena = true;//A PWM timer 2 TEP event will trigger this interrupt
+  mcpwm_isr_register(MCPWM_UNIT_0, isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);  //Set ISR Handler
 }
 
-
+//--------------------------------------------Loop--------------------------------------------
 void loop() {
   motor.loopFOC();
   motor.move(); // target set by the motor.command()  - or by variable motor.target
@@ -149,19 +161,26 @@ void loop() {
   float e = sensor.getAngle();
   //Serial.println(e,4);
   
-  //motor.command(serialReceiveUserCommand());
-  // user communication
-  serialReceiveUserCommand();
+  motor.command(serialReceiveUserCommand());        //user communication
 
+  //Time managment
   runTime = micros();
   timeDif = runTime - prevT;
   prevT = runTime;
   stateT += timeDif;
 
-  if(stateT >= 10000){
+  //Functions inside this "if" will execute at a 10hz rate
+  if(stateT >= 200000){
     tempStatus();
     faultStatus();
+    voltageMonitor();
+    Serial.print(a1);
+  Serial.print(", ");
+  Serial.print(a2);
+  Serial.print(", ");
+  Serial.println(a3);
   }
+  
 }
 
 //Temperature status and manager
@@ -173,18 +192,52 @@ void tempStatus(){
   float temp = (((vOut*3.3)/4095)-1.8577)/-0.01177;
   //Serial.println(temp,2);
   
-  if (temp >= 75 && tFlag == false){
-    digitalWrite(enGate, LOW);
-    tFlag = true;
-    Serial.print("enGate Disabled - Temperature protection: ");
-    Serial.println(temp);
+  if (temp >= 80 && tFlag == false){
+    int tempTime = micros();
+    totalTempTime += tempTime;
+
+    //If temperature is high for 3 seconds disable DRV
+    if(totalTempTime >= 3000000){
+      tFlag = true;
+      digitalWrite(enGate, LOW);
+      Serial.print("enGate Disabled - Temperature protection: ");
+      Serial.println(temp);
+    }
+    
   }
-  else if (tFlag == true && temp <= 75){
-    digitalWrite(enGate, HIGH);
-    tFlag = false;
-    Serial.println("enGate Enabled - Temperature low");
+  else if (temp <= 80 && tFlag == false){
+    totalTempTime = 0;
   }
   
+}
+
+void voltageMonitor(){
+  int rawVoltage = analogRead(17);
+  int bVoltage = rawVoltage * 24/4095;
+}
+
+static void IRAM_ATTR isr_handler(void*){
+  uint32_t mcpwm_intr_status_0;
+  uint32_t mcpwm_intr_status_1;
+  uint32_t mcpwm_intr_status_2;
+  mcpwm_intr_status_0 = MCPWM[MCPWM_UNIT_0]->int_st.timer0_tep_int_st;
+  mcpwm_intr_status_1 = MCPWM[MCPWM_UNIT_0]->int_st.timer1_tep_int_st;
+  mcpwm_intr_status_2 = MCPWM[MCPWM_UNIT_0]->int_st.timer2_tep_int_st;
+  if(mcpwm_intr_status_0 > 0 && currentState == 1){
+    a1 = analogRead(so1);
+    currentState = 2; 
+  }
+  else if(mcpwm_intr_status_1 > 0 && currentState == 2){
+    a2 = analogRead(so2);
+    currentState = 3;
+  }
+  else if(mcpwm_intr_status_2 > 0 && currentState == 3){
+    a3 = analogRead(so3);  
+    currentState = 1;
+  }
+  MCPWM[MCPWM_UNIT_0]->int_clr.timer0_tep_int_clr = mcpwm_intr_status_0;
+  MCPWM[MCPWM_UNIT_0]->int_clr.timer1_tep_int_clr = mcpwm_intr_status_1;
+  MCPWM[MCPWM_UNIT_0]->int_clr.timer2_tep_int_clr = mcpwm_intr_status_2;
 }
 
 //Configure DRV8305 to desired operation mode
@@ -201,7 +254,7 @@ void drv_init(){
   Serial.println(resp2, BIN);
   
   //DC Calibration for current sensing
-/*
+  /*
   digitalWrite(cs, LOW);
   int resp3 = SPI.transfer(B01010111);
   int resp4 = SPI.transfer(B00000000);
@@ -215,8 +268,18 @@ void drv_init(){
   digitalWrite(cs, HIGH);
   Serial.println(resp5);
   Serial.println(resp6);
-*/
+  */
 
+  //Adds delay on the current sense signals
+  /*
+  digitalWrite(cs, LOW);
+  int resp5 = SPI.transfer(B01010000);
+  int resp6 = SPI.transfer(B11000000);
+  digitalWrite(cs, HIGH);
+  Serial.println(resp5);
+  Serial.println(resp6);
+  */
+  
   /*
   digitalWrite(cs, LOW);
   int resp3 = SPI.transfer(B00101000);
@@ -233,25 +296,6 @@ void drv_init(){
   Serial.println(resp6);
   */
   
-}
-
-void currentSensing(){
-  unsigned int currentValue = analogRead(so1);
-  // Remove previous movingAverage from the sum
-  movingAverageSum = movingAverageSum - movingAverage;
-  // Replace it with the current sample
-  movingAverageSum = movingAverageSum + currentValue;
-  // Recalculate movingAverage
-  movingAverage = movingAverageSum / averageCount;
-  
-  a1 = analogRead(so1);
-  a2 = analogRead(so2);
-  a3 = analogRead(so3);
-  Serial.print(movingAverage);
-  Serial.print(", ");
-  Serial.print(a2);
-  Serial.print(", ");
-  Serial.println(a3);
 }
 
 //Fault status and manager for the DRV8305
@@ -313,7 +357,6 @@ void espNowInit(){
   esp_now_register_recv_cb(OnDataRecv);
 }
 
-
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&dagorData, incomingData, sizeof(dagorData));
   //Serial.print("Bytes received: ");
@@ -343,11 +386,6 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     motor.command("C2");
   }
 }
-
-/*void espNowCommand(String act){
-  String action = act;
-  return act;
-}*/
 
 //Utility function enabling serial communication the user
 String serialReceiveUserCommand() {
