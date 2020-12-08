@@ -9,6 +9,7 @@ There will be an alpha run of the board soon, if you're interested please fill t
 | Specification    | Rating          |
 | ------------- |:-------------:|
 | Dimensions      | 44 x 44mm |
+| Mass    | 12g |
 | Power source voltage      | 5-24V |
 | Peak current   | up to 40A |
 | Magnetic sensor resolution | 14 bits |
@@ -38,7 +39,7 @@ The example code was done in the Arduino IDE, running the [SimpleFOC](https://si
 Make sure you follow the next steps to make sure the code will compile.
 
 ### 2.1 Arduino IDE/ ESP32 set-up
-*Random nerd tutorials* have a really easy to follow guide on how to set-up the ESP32 on the Arduino IDE. Follow the steps on [this link](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/) and make sure you can compile one of the examples shown.
+The ESP32 is supported using [arduino-esp32 package](https://github.com/espressif/arduino-esp32); open source software provided by the espressif. You can download the support package through the Arduino Board Manager by searching for ESP32 or follow the instructions on the [package installation webpage](https://github.com/espressif/arduino-esp32#installation-instructions). Once the package is installed make sure you can compile one of the examples.
 
 ### 2.2 ESP32 flash-mode
 To put the Dagor board in flash mode press and hold the Reset Button, press once the Boot Button and then release the Reset Button. You should be able to read on the Serial monitor that the board is waiting for download. Press the upload button and the ESP32 will begin flashing, after it's done press the Reset Button once and the code should start running. 
@@ -46,9 +47,16 @@ To put the Dagor board in flash mode press and hold the Reset Button, press once
 ### 2.3 Running the encoder example
 Download the [Encoder Tester](JC01F05/JC01F05.ino) and open it on your Arduino IDE. Upload it to the ESP32 and open the Serial terminal and make sure the measurement is accurate. Move the motor's rotor one complete rotation and make sure the terminal prints 360 degrees. 
 
-### 2.4 Simple FOC library installation
-The [SimpleFOC](https://github.com/simplefoc) repository has an extremely detailed explanation on how to install the library. The easiest way is to install it through the library manager as shown in the picture.  
+### 2.4 SimpleFOC library installation
+The [SimpleFOC](https://github.com/simplefoc) repository has an extremely detailed explanation on how to install the library. The easiest way is to install it through the library manager as shown in the picture. 
 <img src="Images/LibraryManager.PNG" width=400>
+
+Once installed there's a file that should be replace in order to avoid [this](https://github.com/espressif/arduino-esp32/issues/3743) bug with the ESP32's MCPWM unit (necesarry for smooth motor control). In order to resolve this bug you need to replace one header file in the arduino-esp32 package, called "mcpwm.h".
+This file is usually placed in (Windows): 
+
+>C:\Users\(you user name)\AppData\Local\Arduino15\packages\esp32\hardware\esp32\1.0.4\tools\sdk\include\driver\driver
+
+Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h).
 
 ### 2.4 Running the position control example
 Download the [position control example code](D021F010/D021F010.ino) and open it on your Arduino IDE; there are a few parameters that you might have to tweak. I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
