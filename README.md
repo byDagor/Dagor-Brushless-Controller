@@ -53,6 +53,12 @@ The [SimpleFOC](https://github.com/simplefoc) repository has an extremely detail
 ### 2.4 Running the position control example
 Download the [position control example code](D021F010/D021F010.ino) and open it on your Arduino IDE; there are a few parameters that you might have to tweak. I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
 
+## 3.0 Firmware Roadmap
+- [ ] Torque control mode
+- [ ] PWM input control
+- [ ] Full fault report
+- [ ] Deep-sleep mode
+
 ## Contact 
 davidglzrys@gmail.com  
 [Linkedin](https://www.linkedin.com/in/david-g-reyes/)  
