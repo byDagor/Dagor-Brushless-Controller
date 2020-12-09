@@ -59,13 +59,13 @@ Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h
 
 ### 2.4 Running the firmware
 Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on your Arduino IDE; there are a few parameters that you will have to tweak for your set-up, the main ones are:
-    ```
-    //#######_USER VARIABLES_#######
-    byte pp = 7;                  //BLDC motor number of pole pairs
-    float phaseRes = 0.560;       //Phase winding resistance [ohms]
-    byte sourceVoltage = 12;      //Voltage of your power source [Volts]
-    byte maxCurrent = 2;          //Rough approximation of max current [Amps]
-    ```
+```c++
+//#######_USER VARIABLES_#######
+byte pp = 7;                  //BLDC motor number of pole pairs
+float phaseRes = 0.560;       //Phase winding resistance [ohms]
+byte sourceVoltage = 12;      //Voltage of your power source [Volts]
+byte maxCurrent = 2;          //Rough approximation of max current [Amps]
+```
     
 To understand the rest of the parameters I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
 
