@@ -22,11 +22,11 @@ The Dagor board uses either a ESP32-WROOM-32D or a ESP32-WROOM-32U. The first on
 
 ### 1.2 The three-phase gate driver
 The DRV8305 is a three-phase gate driver that can drive high and low-side N-channel MOSFETS. What makes this driver special is the bunch of programable functions and the protection included.
-With the Janus Controller you can use the DRV8305 in its three operation modes: 6-PWM input, 3-PWM input or 1-PWM input. The [example code](JC01F05/JC01F05.ino) works with the driver set through SPI to operate in the 3-PWM mode.
+With the Dagor Controller you can use the DRV8305 in two operation modes: 3-PWM input or 1-PWM input. The [firmware](Firmware/D021F022/D021F022.ino) works with the driver set through SPI to operate in the 3-PWM mode.
 One feature I like is its fault diagnostics, if the nFault pin pulses it means there is a *warning* that can be read through SPI. If the pin is pulled low it means the driver detected a *fault*, which can also be read through SPI, and the output MOSFETs will be placed in their high impedance state.
-The Janus Controller board has a red indicator LED that will turn on if a *warning* or a *fault* is detected.
+The Dagor Controller board has a red indicator LED that will turn on if a *warning* or a *fault* is detected.
 A few of the faults that the driver reports are the following: high temperature flags, source under or over-voltage, VDS over current monitors, gate drive fault, etc.
-The picture bellow shows the simplified schematic of the driver that can be found in the [DRV8305 datasheet](https://www.ti.com/lit/ds/symlink/drv8305.pdf?ts=1593641896221&ref_url=https%253A%252F%252Fwww.google.com%252F). Please refer to it if you want to learn more about all the features of this driver IC.
+The picture below shows the simplified schematic of the driver that can be found in the [DRV8305 datasheet](https://www.ti.com/lit/ds/symlink/drv8305.pdf?ts=1593641896221&ref_url=https%253A%252F%252Fwww.google.com%252F). Please refer to it if you want to learn more about all the features of this driver IC.
 ![DRV8305](Images/DRV8305Schematic.PNG)
 
 ### 1.3 The magnetic sensor
@@ -35,8 +35,7 @@ The picture bellow shows the simplified schematic of the driver that can be foun
 The Dagor board has a buck converter that regulates the input voltage to 3.3V to power the ESP32 and the magnetic sensor and to be able to power external periferals, such as: an external magnetic sensor, encoder, display, etc.
 
 ## 2. Getting started
-The example code was done in the Arduino IDE, running the [SimpleFOC](https://simplefoc.com) Arduino Library. By changing a simple parameter, this code allows you to control position and velocity of your burshless motor, or setting a voltage as you would do with a DC motor. 
-Make sure you follow the next steps to make sure the code will compile.
+The firmware was done in the Arduino IDE, running the [SimpleFOC](https://simplefoc.com) Arduino Library. By changing a few simple parameter, this code allows you to drive a brushless motor in three control modes: position, velocity and voltage. Make sure you follow the next steps to make sure the code will compile.
 
 ### 2.1 Arduino IDE/ ESP32 set-up
 The ESP32 is supported using [arduino-esp32 package](https://github.com/espressif/arduino-esp32); open source software provided by the espressif. You can download the support package through the Arduino Board Manager by searching for ESP32 or follow the instructions on the [package installation webpage](https://github.com/espressif/arduino-esp32#installation-instructions). Once the package is installed make sure you can compile one of the examples.
@@ -58,8 +57,13 @@ This file is usually placed in (Windows):
 
 Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h).
 
-### 2.4 Running the position control example
-Download the [position control example code](D021F010/D021F010.ino) and open it on your Arduino IDE; there are a few parameters that you might have to tweak. I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
+### 2.4 Running the firmware
+Download the [firmware](D021F022/D021F022.ino) and open it on your Arduino IDE; there are a few parameters that you will have to tweak for your set-up, the main ones are:
+    BLDCMotor motor = BLDCMotor(7); //Write in the parenthesis the number of pole pairs your motor has.
+    driver.voltage_power_supply = 12;   //Voltage of your power source
+    motor.voltage_limit = voltageLimit;   //Voltage limit
+    
+To understand the rest of the parameters I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
 
 ## 3.0 Firmware Roadmap
 - [ ] Torque control mode
