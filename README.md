@@ -40,8 +40,8 @@ The firmware was done in the Arduino IDE, running the [SimpleFOC](https://simple
 ### 2.1 Arduino IDE/ ESP32 set-up
 The ESP32 is supported using [arduino-esp32 package](https://github.com/espressif/arduino-esp32); open source software provided by the espressif. You can download the support package through the Arduino Board Manager by searching for ESP32 or follow the instructions on the [package installation webpage](https://github.com/espressif/arduino-esp32#installation-instructions). Once the package is installed make sure you can compile one of the examples.
 
-### 2.2 ESP32 flash-mode
-To put the Dagor board in flash mode press and hold the Reset Button, press once the Boot Button and then release the Reset Button. You should be able to read on the Serial monitor that the board is waiting for download. Press the upload button and the ESP32 will begin flashing, after it's done press the Reset Button once and the code should start running. 
+### 2.2 Flashing the Dagor Controller
+It is requiered a USB to TTL adapter to flash the Dagor board; I recommend using the CP2102 module. Once the adapter is connected to the board, to put the Dagor board in flash mode press and hold the Reset Button, press once the Boot Button and then release the Reset Button. You should be able to read on the Serial monitor that the board is waiting for download. Press the upload button on the Arduino IDE and the ESP32 will begin flashing, after it's done press the Reset Button once and the code should start running. 
 
 ### 2.3 Running the encoder example
 Download the [Encoder Tester](JC01F05/JC01F05.ino) and open it on your Arduino IDE. Upload it to the ESP32 and open the Serial terminal and make sure the measurement is accurate. Move the motor's rotor one complete rotation and make sure the terminal prints 360 degrees. 
@@ -59,16 +59,20 @@ Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h
 
 ### 2.4 Running the firmware
 Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on your Arduino IDE; there are a few parameters that you will have to tweak for your set-up, the main ones are:
-    BLDCMotor motor = BLDCMotor(7); //Write in the parenthesis the number of pole pairs your motor has.
-    driver.voltage_power_supply = 12;   //Voltage of your power source
-    motor.voltage_limit = voltageLimit;   //Voltage limit
+    ```
+    //#######_USER VARIABLES_#######
+    byte pp = 7;                  //BLDC motor number of pole pairs
+    float phaseRes = 0.560;       //Phase winding resistance [ohms]
+    byte sourceVoltage = 12;      //Voltage of your power source [Volts]
+    byte maxCurrent = 2;          //Rough approximation of max current [Amps]
+    ```
     
 To understand the rest of the parameters I really recommend reading the [SimpleFOC](https://docs.simplefoc.com/) documentation. 
 
 ## 3.0 Firmware Roadmap
 - [ ] Torque control mode
 - [ ] PWM input control
-- [ ] Full fault report
+- [ ] Full fault diagnostics report
 - [ ] Deep-sleep mode
 
 ## Contact 
