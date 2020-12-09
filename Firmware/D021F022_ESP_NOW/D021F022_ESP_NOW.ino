@@ -1,4 +1,4 @@
-//Dagor 2.1 Brushless Controller Firmware 022 (Includes current sensing)
+//Dagor 2.1 Brushless Controller Firmware 022 (Includes current sensing, not yet used for control)
 
 //SimpleFOC Version 2.0.1
 #include <SimpleFOC.h>
@@ -8,6 +8,21 @@
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
+
+//#######_USER VARIABLES_#######
+byte pp = 7;                  //BLDC motor number of pole pairs
+float phaseRes = 0.560;       //Phase winding resistance [ohms]
+byte sourceVoltage = 12;      //Voltage of your power source [Volts]
+byte maxCurrent = 2;          //Rough approximation of max current [Amps]
+
+//#######_CONTROLLER PARAMETERS_#######
+float ki = 0.002;
+float ti = 2.5; 
+float lpFilter = 0.000;
+float kp = 10;
+float voltageRamp = 25;
+float voltageLimit = phaseRes*maxCurrent;
+float velocityLimit = 2000;
 
 //######_ESPNOW_######
 typedef struct struct_message {
@@ -42,13 +57,14 @@ byte currentState = 1;
 
 //######_TEMPERATURE SENSOR_######
 #define vTemp 39
+byte maxTemp = 80;      //Maximum temperature [°C]
 
 //#####_TIME MANAGEMENT_#####
 float runTime, prevT = 0, timeDif, stateT;
 int timeInterval = 1000, totalTempTime;
 
 //####_SIMPLEFOC INSTANCES_####
-BLDCMotor motor = BLDCMotor(7);   //BLDCMotor instance
+BLDCMotor motor = BLDCMotor(pp);   //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27);     //3PWM Driver instance
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);       //SPI Magnetic sensor instance
 //Encoder sensor = Encoder(4, 2, 1024);       // Quadrature encoder instance
@@ -58,22 +74,11 @@ MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);       //SPI 
 //void doA(){sensor.handleA();}
 //void doB(){sensor.handleB();}
 
-//#####_System Gains_#####
-float ki = 0.002; //0.075;
-float ti = 2.5; //0.0075;
-float lpFilter = 0.000;
-float kp = 10; //15;
-float voltageRamp = 25;
-float voltageLimit = 1.0;
-float velocityLimit = 2000;
-
 //--------------------------------------------Set-up--------------------------------------------
 void setup() {
   Serial.begin(115200);
 
   analogSetCycles(2);
-  //analogReadResolution(11);
-  //analogSetWidth(11);
 
   //Pinmodes
   pinMode(15,OUTPUT);
@@ -116,7 +121,7 @@ void setup() {
   motor.linkSensor(&sensor);
   
   // driver config, power supply voltage [V]
-  driver.voltage_power_supply = 12;
+  driver.voltage_power_supply = sourceVoltage;
   driver.init();
   motor.linkDriver(&driver);
 
@@ -124,7 +129,7 @@ void setup() {
   motor.controller = ControlType::angle;
 
   // Sensor aligning voltage
-  motor.voltage_sensor_align = 0.5;
+  motor.voltage_sensor_align = voltageLimit/2;
   
   // velocity PI controller parameters, default K=0.5 Ti = 0.01
   motor.PID_velocity.P = ki;
@@ -192,7 +197,7 @@ void tempStatus(){
   float temp = (((vOut*3.3)/4095)-1.8577)/-0.01177;
   //Serial.println(temp,2);
   
-  if (temp >= 80 && tFlag == false){
+  if (temp >= maxTemp && tFlag == false){
     int tempTime = micros();
     totalTempTime += tempTime;
 
@@ -205,7 +210,7 @@ void tempStatus(){
     }
     
   }
-  else if (temp <= 80 && tFlag == false){
+  else if (temp <= maxTemp && tFlag == false){
     totalTempTime = 0;
   }
   
