@@ -50,7 +50,7 @@ Download the [Encoder Tester](JC01F05/JC01F05.ino) and open it on your Arduino I
 The [SimpleFOC](https://github.com/simplefoc) repository has an extremely detailed explanation on how to install the library. The easiest way is to install it through the library manager as shown in the picture. 
 <img src="Images/LibraryManager.PNG" width=400>
 
-Once installed there's a file that should be replace in order to avoid [this](https://github.com/espressif/arduino-esp32/issues/3743) bug with the ESP32's MCPWM unit (necesarry for smooth motor control). In order to resolve this bug you need to replace one header file in the arduino-esp32 package, called "mcpwm.h".
+Once installed there's a file that should be replace in order to avoid [this](https://github.com/espressif/arduino-esp32/issues/3743) bug with the ESP32's MCPWM unit (necesarry for smooth motor control). In order to resolve this bug you need to replace one header file in the arduino-esp32 package, called [mcpwm.h](Dependencies/mcpwm.h).
 This file is usually placed in (Windows): 
 
 >C:\Users\(you user name)\AppData\Local\Arduino15\packages\esp32\hardware\esp32\1.0.4\tools\sdk\include\driver\driver
@@ -58,7 +58,7 @@ This file is usually placed in (Windows):
 Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h).
 
 ### 2.4 Running the firmware
-Download the [firmware](D021F022/D021F022.ino) and open it on your Arduino IDE; there are a few parameters that you will have to tweak for your set-up, the main ones are:
+Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on your Arduino IDE; there are a few parameters that you will have to tweak for your set-up, the main ones are:
     BLDCMotor motor = BLDCMotor(7); //Write in the parenthesis the number of pole pairs your motor has.
     driver.voltage_power_supply = 12;   //Voltage of your power source
     motor.voltage_limit = voltageLimit;   //Voltage limit
