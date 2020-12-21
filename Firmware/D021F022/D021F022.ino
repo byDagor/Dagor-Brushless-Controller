@@ -14,13 +14,13 @@ byte sourceVoltage = 12;      //Voltage of your power source [Volts]
 byte maxCurrent = 2;          //Rough approximation of max current [Amps]
 
 //#######_CONTROLLER PARAMETERS_#######
-float ki = 0.002;
-float ti = 2.5; 
+float ki = 0.002;             //Velocity control loop PROPORTIONAL gain value
+float ti = 2.5;               //Velocity control loop INTEGRAL gain value
 float lpFilter = 0.000;
-float kp = 10;
-float voltageRamp = 25;
+float kp = 10;                //Position control loop PROPORTIONAL gain value
+float voltageRamp = 25;       //Change in voltage allowed [Volts per sec]
 float voltageLimit = phaseRes*maxCurrent;
-float velocityLimit = 2000;
+float velocityLimit = 2000;   //Velocity limit [rpm]
 
 //#######_DRV8305_########
 //Datasheet: www.ti.com/lit/ds/symlink/drv8305.pdf
