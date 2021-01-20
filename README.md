@@ -18,7 +18,8 @@ There will be an alpha run of the board soon, if you're interested please fill t
 ## 1. The board
 
 ### 1.1 The microcontroller
-The Dagor board uses either a ESP32-WROOM-32D or a ESP32-WROOM-32U. The first one has an antenna that allows ESP-NOW, wifi or bluetooth communication, the second one has a u.fl connector to attach an external antenna. See section 2.2 to see how to setup your Arduino IDE to be able to flash the ESP32.
+The Dagor board uses a 160 MHz, 32 bit, dual-core ESP32 microcontroller. The ESP32 has wireless capabilities, such as WIFI and Bluetooth, but most importantly ESP-NOW. ESP-NOW is a communication protocol by *Espressif* that enables multiple devices to talk wirelessly to each other via short packet transmission. See section 2.2 to see how to setup your Arduino IDE to be able to flash the ESP32.
+Due to popular demand of the alpha testers the Dagor Controller Alpha 2.4 will come with the ESP32-WROOM-32U. This makes the board have a smaller footprint and has a u.fl connector to attach an external antenna.
 
 ### 1.2 The three-phase gate driver
 The DRV8305 is a three-phase gate driver that can drive high and low-side N-channel MOSFETS. What makes this driver special is the amount of programmable parameters, the protection features and the fault diagnostics; all of which take place through an SPI bus.
@@ -30,12 +31,15 @@ The picture below shows the simplified schematic of the driver that can be found
 ![DRV8305](Images/DRV8305Schematic.PNG)
 
 ### 1.3 The magnetic sensor
-The Dagor Controller has a high resolution absolute magnetic sensor for its precise control. The sensor makes use of a diametrically polarized magnet attached to the motor's rotor, as shown in the picture. If you wish to learn more about this sensor refer to the [AS5147 datasheet](https://ams.com/documents/20143/36005/AS5147_DS000307_2-00.pdf).
+The Dagor Controller has a high resolution absolute magnetic sensor for its precise control. The sensor makes use of a diametrically polarized magnet attached to the motor's rotor, as shown in the picture. To learn more about this sensor refer to the [AS5147 datasheet](https://ams.com/documents/20143/36005/AS5147_DS000307_2-00.pdf).
 
 ![AS5147](Images/Magnet.PNG)
 
 ### 1.4 The buck converter
-The Dagor board has a buck converter that regulates the input voltage to 3.3V to power the ESP32 and the magnetic sensor and to be able to power external peripherals, such as: an external magnetic sensor, encoder, display, etc.
+The Dagor Controller has a buck converter that regulates the input voltage to 3.3V to power the ESP32 and the magnetic sensor and to be able to power external peripherals, such as: an external magnetic sensor, encoder, display, etc.
+
+### 1.5 The temperature sensor
+The Maximum continuous current of the Dagor Controller depends on the quality of heat-sinking and cooling. A small heat-sink or a cooling fan can have great impacts on the maximum continuous current the board can handle. The on-board temperature sensor is a great way to assure the user stays within the safe range of operating temperature. The temperature sensor is found near the MOSFETs to obtain a more accurate measurement of the temperature of the controller's power stage. To learn more about this sensor please refer to the [STLM20W87F datasheet](https://datasheet.lcsc.com/szlcsc/1810010411_STMicroelectronics-STLM20W87F_C129796.pdf).
 
 ## 2. Getting started
 The firmware was done in the Arduino IDE, running the [SimpleFOC](https://simplefoc.com) Arduino Library. By changing a few simple parameter, this code allows you to drive a brushless motor in three control modes: position, velocity and voltage. Make sure you follow the next steps to make sure the code will compile.
