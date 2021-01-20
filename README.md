@@ -3,7 +3,7 @@ The Dagor controller is an ESP32 based brushless controller that has an on-board
 
 There will be an alpha run of the board soon, if you're interested please fill this forms: https://forms.gle/S7gtZfyXZeQ7XbT29
 
-![DagorBoard](Images/Dagor2.1.png)
+![DagorBoard](Images/DagorAlpha2.4.png)
 
 ## Key specs
 | Specification    | Rating          |
@@ -26,10 +26,12 @@ The [firmware](Firmware/D021F022/D021F022.ino) works with the driver, set throug
 The driver has two types of faults: *warning* and *fault*. If either occur the red indicator LED on the Dagor board will turn on; if a *fault* occurs the the output MOSFETs will be placed in their high impedance state, if a *warning* occurs operation will continue normally.
 A few of the faults that the driver reports are the following: high temperature flags, source under or over-voltage, VDS over current monitors, gate drive fault, etc.
 The picture below shows the simplified schematic of the driver that can be found in the [DRV8305 datasheet](https://www.ti.com/lit/ds/symlink/drv8305.pdf?ts=1593641896221&ref_url=https%253A%252F%252Fwww.google.com%252F). Please refer to it if you want to learn more about all the features of this driver IC.
+
 ![DRV8305](Images/DRV8305Schematic.PNG)
 
 ### 1.3 The magnetic sensor
 The Dagor Controller has a high resolution absolute magnetic sensor for its precise control. The sensor makes use of a diametrically polarized magnet attached to the motor's rotor, as shown in the picture. If you wish to learn more about this sensor refer to the [AS5147 datasheet](https://ams.com/documents/20143/36005/AS5147_DS000307_2-00.pdf).
+
 ![AS5147](Images/Magnet.PNG)
 
 ### 1.4 The buck converter
@@ -69,7 +71,7 @@ byte sourceVoltage = 12;      //Voltage of your power source [Volts]
 byte maxCurrent = 2;          //Rough approximation of max current [Amps]
 ```
 
-These are the control loops parameters, to obtain the desired response out of the controller they need to be tuned. The parameters can be tune via the Serial Monitor with a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To the right on the snip of code bellow there are the special characters that tune each corresponding parameter. Make sure to write the final values of the parameters to update the firmware and upload it again.
+These are the control loops parameters, to obtain the desired response out of the controller they need to be tuned. The parameters can be tuned via the Serial Monitor sending a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To the right on the snip of code bellow there are the special characters that tune each corresponding parameter. Make sure to write the final values of the parameters to update the firmware and upload it again.
 ```c++
 //#######_CONTROLLER PARAMETERS_#######
 float ki = 0.002;             //Velocity control loop PROPORTIONAL gain value   - P_
