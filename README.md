@@ -38,6 +38,10 @@ The Dagor Controller has a high resolution absolute magnetic sensor for its prec
 ### 1.4 The buck converter
 The Dagor Controller has a buck converter that regulates the input voltage to 3.3V to power the ESP32 and the magnetic sensor and to be able to power external peripherals, such as: an external magnetic sensor, encoder, display, etc.
 
+| :warning: WARNING          |
+|:---------------------------|
+| Touching this IC may damage critically the controller (the IC is label as U3 on the board).   |
+
 ### 1.5 The temperature sensor
 The Maximum continuous current of the Dagor Controller depends on the quality of heat-sinking and cooling. A small heat-sink or a cooling fan can have great impacts on the maximum continuous current the board can handle. The on-board temperature sensor is a great way to assure the user stays within the safe range of operating temperature. The temperature sensor is found near the MOSFETs to obtain a more accurate measurement of the temperature of the controller's power stage. To learn more about this sensor please refer to the [STLM20W87F datasheet](https://datasheet.lcsc.com/szlcsc/1810010411_STMicroelectronics-STLM20W87F_C129796.pdf).
 
@@ -49,6 +53,8 @@ The ESP32 is supported using [arduino-esp32 package](https://github.com/espressi
 
 ### 2.2 Flashing the Dagor Controller
 It is required a USB to TTL adapter to flash the Dagor board; I recommend using the CP2102 module. Once the adapter is connected to the board, to put the Dagor board in flash mode press and hold the Reset Button, press once the Boot Button and then release the Reset Button. You should be able to read on the Serial monitor that the board is *waiting for download*. Press the upload button on the Arduino IDE and the ESP32 will begin flashing, after it's done press the Reset Button once and the code should start running.
+
+![CP2102](Images/DagorCP2102.png)
 
 ### 2.3 Running the encoder example
 Download the [Encoder Tester](JC01F05/JC01F05.ino) and open it on your Arduino IDE. Upload it to the ESP32 and open the Serial terminal and make sure the measurement is accurate. Move the motor's rotor one complete rotation and make sure the terminal prints 360 degrees.
