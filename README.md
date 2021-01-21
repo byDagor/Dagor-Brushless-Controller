@@ -40,7 +40,7 @@ The Dagor Controller has a buck converter that regulates the input voltage to 3.
 
 | :warning: WARNING          |
 |:---------------------------|
-| Touching this IC may damage critically the controller (the IC is label as U3 on the board).   |
+| Touching this IC may fatally damage the controller (the IC is label as U3 on the board).   |
 
 ### 1.5 The temperature sensor
 The Maximum continuous current of the Dagor Controller depends on the quality of heat-sinking and cooling. A small heat-sink or a cooling fan can have great impacts on the maximum continuous current the board can handle. The on-board temperature sensor is a great way to assure the user stays within the safe range of operating temperature. The temperature sensor is found near the MOSFETs to obtain a more accurate measurement of the temperature of the controller's power stage. To learn more about this sensor please refer to the [STLM20W87F datasheet](https://datasheet.lcsc.com/szlcsc/1810010411_STMicroelectronics-STLM20W87F_C129796.pdf).
@@ -73,8 +73,10 @@ Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h
 
 ### 2.4 The firmware
 The [firmware](Firmware/D021F022/D021F022.ino) has a particular name that describes which board revision it belongs to and which version of firmware it is. The name will look something like this:
->DXXXFXXX
-For example, D021F022 means firmware version 2.2 for Dagor Controller 2.1.
+
+>**DXXXFXXX**
+
+For example, **D021F022** means firmware version 2.2 for Dagor Controller 2.1.
 
 Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on Arduino IDE; there are a few parameters that have to be tweaked for each individual set-up, the main ones are:
 ```c++
