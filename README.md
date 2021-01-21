@@ -3,7 +3,7 @@ The Dagor controller is an ESP32 based brushless controller that has an on-board
 
 There will be an alpha run of the board soon, if you're interested please fill this forms: https://forms.gle/S7gtZfyXZeQ7XbT29
 
-![DagorBoard](Images/DagorAlpha2.4.png)
+![DagorBoard](Images/DagorAlpha.png)
 
 ## Key specs
 | Specification    | Rating          |
@@ -64,7 +64,7 @@ The [SimpleFOC](https://github.com/simplefoc) repository has an extremely detail
 
 <img src="Images/LibraryManager.PNG" width=400>
 
-Once installed there's a file that should be replace in order to avoid [this](https://github.com/espressif/arduino-esp32/issues/3743) bug with the ESP32's MCPWM unit (necessary for smooth motor control). In order to resolve this bug you need to replace one header file in the arduino-esp32 package, called [mcpwm.h](Dependencies/mcpwm.h).
+Once installed there's a file that should be replaced in order to avoid [this](https://github.com/espressif/arduino-esp32/issues/3743) bug with the ESP32's MCPWM unit (necessary for smooth motor control). In order to resolve this bug replace the header file in the arduino-esp32 package, called [mcpwm.h](Dependencies/mcpwm.h).
 This file is usually found in (Windows):
 
 >C:\Users\(you user name)\AppData\Local\Arduino15\packages\esp32\hardware\esp32\1.0.4\tools\sdk\include\driver\driver
@@ -72,7 +72,11 @@ This file is usually found in (Windows):
 Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h).
 
 ### 2.4 The firmware
-Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on your Arduino IDE; there are a few parameters that you will have to tweak for your set-up, the main ones are:
+The [firmware](Firmware/D021F022/D021F022.ino) has a particular name that describes which board revision it belongs to and which version of firmware it is. The name will look something like this:
+>DXXXFXXX
+For example, D021F022 means firmware version 2.2 for Dagor Controller 2.1.
+
+Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on Arduino IDE; there are a few parameters that have to be tweaked for each individual set-up, the main ones are:
 ```c++
 //#######_USER VARIABLES_#######
 byte pp = 7;                  //BLDC motor number of pole pairs
