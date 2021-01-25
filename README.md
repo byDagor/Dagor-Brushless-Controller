@@ -23,7 +23,6 @@ Due to popular demand of the alpha testers the Dagor Controller Alpha 2.4 will c
 
 ### 1.2 The three-phase gate driver
 The DRV8305 is a three-phase gate driver that can drive high and low-side N-channel MOSFETS. What makes this driver special is the amount of programmable parameters, the protection features and the fault diagnostics; all of which take place through an SPI bus.
-The [firmware](Firmware/D021F022/D021F022.ino) works with the driver, set through SPI, to operate in the 3-PWM mode.
 The driver has two types of faults: *warning* and *fault*. If either occur the red indicator LED on the Dagor board will turn on; if a *fault* occurs the the output MOSFETs will be placed in their high impedance state, if a *warning* occurs operation will continue normally.
 A few of the faults that the driver reports are the following: high temperature flags, source under or over-voltage, VDS over current monitors, gate drive fault, etc.
 The picture below shows the simplified schematic of the driver that can be found in the [DRV8305 datasheet](https://www.ti.com/lit/ds/symlink/drv8305.pdf?ts=1593641896221&ref_url=https%253A%252F%252Fwww.google.com%252F). Please refer to it if you want to learn more about all the features of this driver IC.
@@ -72,13 +71,17 @@ This file is usually found in (Windows):
 Navigate to this directory and replace the file with [this](Dependencies/mcpwm.h).
 
 ### 2.4 The firmware
-The [firmware](Firmware/D021F022/D021F022.ino) has a particular name that describes which board revision it belongs to and which version of firmware it is. The name will look something like this:
+The [firmware](Firmware/a_DA024F010) is separated into 6 tabs (a - f), make sure all .ino files are stored in the folder named the same as the tab *a*.
+The [firmware](Firmware/a_DA024F010) has a particular folder name that describes which board revision it belongs to and which version of firmware it is. The name will look something like this:
 
->**DXXXFXXX**
+>**a_DAXXXFXXX**
 
-For example, **D021F022** means firmware version 2.2 for Dagor Controller 2.1.
+For example, **a_DA024F010** means firmware version 1.0 for Dagor Controller Alpha 2.4. 
 
-Download the [firmware](Firmware/D021F022/D021F022.ino) and open it on Arduino IDE; there are a few parameters that have to be tweaked for each individual set-up, the main ones are:
+Download the [firmware](Firmware/a_DA024F010) and open it on Arduino IDE. There are a few parameters that have to be tweaked for each individual set-up, this parameter can be found on the tab *a* of the firmware folder.
+
+Bellow are the variables dependent on the user's set-up. If the phase resistance is unknown and can't be meausered with a multimeter assume a low resistance and over-write the voltage limit to 1V. If this is too small increase the number until the desired torque is achieved. 
+
 ```c++
 //#######_USER VARIABLES_#######
 byte pp = 7;                  //BLDC motor number of pole pairs
