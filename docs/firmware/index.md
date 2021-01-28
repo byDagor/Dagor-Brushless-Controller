@@ -8,7 +8,7 @@ has_children: True
 
 # Firmware
 
-The [firmware](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) was developed in the Arduino development environment as part of the SimpleFOCproject; this code is merely a starting point as it’s encouraged to modify it to fit specific projects. The [firmware](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) has a particular folder name that describes which board revision it belongs to and which version of firmware it is. The name will look something like this:
+The [firmware](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) was developed in the Arduino development environment as part of the [SimpleFOCproject](simplefoc.com); this code is merely a starting point as it’s encouraged to modify it to fit specific projects. [It](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) can be found in the project's [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) and it has a particular project folder name that describes which board revision it belongs to and which version of firmware it is. The name will look something like this:
 
 >**a_DAXXXFXXX**
 
