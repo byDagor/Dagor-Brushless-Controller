@@ -11,7 +11,8 @@ permalink: /contact
 
 For general questions please post in the [community forum](https://community.simplefoc.com).
 
-##Direct Contact
+## Direct Contact
 
 david@simplefoc.com
+
 [Linkedin](https://www.linkedin.com/in/david-g-reyes/) 
