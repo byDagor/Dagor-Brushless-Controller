@@ -1,6 +1,8 @@
-# simplefoc.github.io
-Documentation website for SimpleFOCproject
+﻿# bydagor.github.io/Dagor-Brushless-Controller/
+ 
+ Documentation website of the Dagor Brushless Controller
 
-- [Documentation](https://docs.simplefoc.com)
-- [Community forum](https://community.simplefoc.com)
-- [Shop](https://simplefoc.com/shop)
+## Contact
+davidglzrys@gmail.com  
+[Linkedin](https://www.linkedin.com/in/david-g-reyes/)  
+[YouTube](https://www.youtube.com/channel/UC4gsPZan2T4v5LpJ5J_t7sQ/featured)
