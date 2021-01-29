@@ -25,7 +25,7 @@ The Dagor Brushless Controller was designed as a simple platform for hobbyist an
 
 ## Key specs
 | Specification    | Rating          |
-| ------------- |:-------------:|
+| ------------- |-------------|
 | Dimensions      | 44 x 44mm |
 | Mass    | 12g |
 | Power source voltage      | 5-24V |
