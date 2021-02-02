@@ -14,8 +14,7 @@ The [firmware](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master
 
 For example, **a_DA024F010** means firmware version 1.0 for Dagor Controller Alpha 2.4.
 
-The [firmware](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) (Arduino project)  is separated into 6 tabs (a - f), make sure all .ino files are stored in the folder named the same as the tab *a*.
+The [firmware](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) (Arduino project) is separated into 6 tabs (a - f), make sure all .ino files are stored in the folder named the same as the tab *a*.
 
 This folder should look like the picture bellow:
 ![firmware_folder](Images/firmware_folder.PNG)
-
