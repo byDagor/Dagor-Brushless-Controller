@@ -8,7 +8,7 @@ permalink: /power_stage
 
 # Power stage
 
-The board's power stage consist of three N-channel MOSFET half-bridges and a DRV8305 pre-driver. The power stage can be described as the components necessary to drive a brushless motor according to the logic from the logic stage. The area marked in red shows the power stage in the Dagor Controller Alpha.
+The board's power stage consist of three N-channel MOSFET half-bridges and a DRV8305 pre-driver. The power stage can be described as the components necessary to deliver the power to drive a brushless motor according to the logic from the logic stage. The area marked in red shows the power stage in the Dagor Controller Alpha.
 
 ![power_stage_dagor](Images/power_stage_dagor.png)
 
