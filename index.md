@@ -26,6 +26,7 @@ The Dagor Brushless Controller was designed as a simple platform for hobbyist an
 - endless amount of compatible libraries
 
 ## Key specs
+
 | Specification    | Rating          |
 | ------------- |-------------|
 | Dimensions      | 44 x 44mm |
