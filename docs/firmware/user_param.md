@@ -8,7 +8,7 @@ permalink: /user_param
 
 # User Parameters
 
-There are a few parameters that have to be tweaked for each individual set-up, this parameter can be found on the tab *a* of the firmware folder.
+There are a few parameters that have to be tweaked for each individual set-up, this parameter can be found on the tab *a* of the firmware folder. This section covers a break-down of this tab.
 
 Bellow are the variables dependent on the user's set-up. If the phase resistance is unknown and can't be measured with a multimeter assume a low resistance and over-write the voltage limit to 1V. If this is too small increase the number until the desired torque is achieved.
 

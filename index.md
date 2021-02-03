@@ -7,6 +7,9 @@ permalink: /
 
 # Dagor Brushless Controller
 
+>**SITE UNDER CONTRUCTION**
+
+![construction](Images/under_construction.jpg)
 
 The Dagor Controller is a fully integrated tiny solution for brushless-based actuators with wireless capabilities. ESP32-based brushless controller that has an on-board magnetic encoder, a three-phase MOSFET driver, three MOSFET half-bridges, a temperature sensor and current sensing resistors.
 
@@ -17,11 +20,10 @@ The project is currently on it's Alpha stage and with the help of the Alpha test
 ## What makes this Controller different?
 
 The Dagor Brushless Controller was designed as a simple platform for hobbyist and students to power brushless-based projects. The firmware for this board was developed in the Arduino development environment as part of the SimpleFOCprject. This firmware is merely a starting point as it's encouraged to modify it to fit specific projects. The firmware being very easy to modify and understand gives some key advantages:
-- great platform for single board projects 
+- great platform for single board projects
 - specific communication scheme design for multi-board projects
 - implementation of unique control laws
 - endless amount of compatible libraries
-
 
 ## Key specs
 | Specification    | Rating          |

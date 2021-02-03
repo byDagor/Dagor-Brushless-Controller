@@ -2,7 +2,7 @@
 layout: default
 title: Firmware
 nav_order: 3
-permalink: /Firmware_parent
+permalink: /Firmware
 has_children: True
 ---
 

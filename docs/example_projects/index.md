@@ -7,5 +7,3 @@ has_children: True
 ---
 
 # Example projects
-
-Recollection of projects using the Dagor Controller.

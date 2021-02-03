@@ -17,7 +17,7 @@ The first step is to collect all the necessary materials together:
 - Diametrically polarized magnet (included with controller)
 - Brushless motor
 - Motor/ controller base
-- Power source
+- Adequate power source
 - USB to TTL converter
 - Connectors (optional)
 
@@ -45,18 +45,26 @@ The firmware was developed in the Arduino development environment as part of the
 
 This section includes the relevant steps to update the firmware on a brand new Dagor Controller.
 
-### 4.1 Downloading the firmware
+### 4.1 Downloading the firmware and change user parameters
 
-Download the most recent firmware version and open it on the Arduino IDE.
+Download the most recent firmware version from the [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) and open it on the Arduino IDE. Visit the [firmware section](https://bydagor.github.io/Dagor-Brushless-Controller/Firmware) to learn about the firmware structure and version name.
 
-### 4.2 Changing the user parameters
+Given each individual set-up there's a few parameters that must be changed in the firmware. By this point the pole pair number, the phase resistance, the power supply voltage should be known. Visit the [user parameters section](https://bydagor.github.io/Dagor-Brushless-Controller/user_param) to learn how to update these parameters in the firmware.
 
-With the information from the previous steps there's a few parameters that must be changed in the firmware, such as: power supply voltage, phase resistance, maximum estimated current, etc.
+### 4.2 Controller flash mode
 
-### 4.3 Controller flash mode
-
-It is required a USB to TTL adapter to flash the Dagor board; I recommend using the CP2102 module. Once the adapter is connected to the board (as shown in the picture bellow), to put the Dagor board in flash mode press and hold the Reset Button, press once the Boot Button and then release the Reset Button. You should be able to read on the Serial monitor that the board is *waiting for download*. Press the upload button on the Arduino IDE and the ESP32 will begin flashing, after it's done press the Reset Button once and the code should start running.
+It is required a USB to TTL adapter to flash the Dagor board; it is recommended to use the CP2102 module. Solder (optionally) any type of headers style to the board to be able to easily connect and disconnect the module. Once the adapter is connected to the board (as shown in the picture bellow), to put the Dagor board in flash mode press and hold the Reset Button, press once the Boot Button and then release the Reset Button. If done correctly the Serial monitor from the Arduino IDE should print that the board is *waiting for download*. Press the upload button on the Arduino IDE and the ESP32 will begin flashing, after it's done press the Reset Button once and the code should start running.
 
 ![CP2102](Images/DagorCP2102.png)
 
 ## Step 5. Motor and controller base
+
+The Dagor controller has to be firmly attached to the motor's stator, fixing the center of the magnetic sensor to the center of the magnet. One easy way to do this is by designing and 3D printing a base (or test station) that fixes together a motor (with its magnet) and a controller. Here you can find a CAD to use as reference for a 3D printed base, like seen in the picture bellow.
+
+## Step 6. Testing
+
+By this point, the only thing left to do is test the set-up and tune the controller.
+
+### 6.1
+
+### 6.2 Tune the controller
