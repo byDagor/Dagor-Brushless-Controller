@@ -20,11 +20,11 @@ The Maximum continuous current of the Dagor Controller depends on the quality of
 
 ## Temperature vs. current curve
 
-This section cover the steady state temperature versus constant current draw with the controller without any type of cooling or heat-sinking.
+This section studies the steady state temperature versus constant current draw with the controller without any type of cooling or heat-sinking.
 
 >Graph coming soon, if you wish to help with this measurements shoot me an email :)
 
-#Voltage monitor
+# Voltage monitor
 
 The Dagor controller has a resistor-based voltage divider that can be used to monitor the power source/ battery voltage.
 
