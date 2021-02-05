@@ -20,7 +20,7 @@ byte sourceVoltage = 12;      //Voltage of your power source [Volts]
 byte maxCurrent = 2;          //Rough approximation of max current [Amps]
 ```
 
-These are the control loops parameters, to obtain the desired response out of the controller they need to be tuned. The parameters can be tuned via the Serial Monitor sending a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To the right on the snip of code bellow there are the special characters that tune each corresponding parameter. Make sure to write the final values of the parameters to update the firmware and upload it again.
+These are the control loops parameters, to obtain the desired response out of the controller they need to be tuned. The parameters can be tuned via the Serial Monitor sending a [command](https://docs.simplefoc.com/communication) which consists of a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To the right on the snip of code bellow there are the special characters that tune each corresponding parameter. Make sure to write the final values of the parameters to update the firmware and upload it again.
 
 ```c++
 //#######_CONTROLLER PARAMETERS_#######

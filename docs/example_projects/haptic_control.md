@@ -10,14 +10,16 @@ permalink: /haptic_control
 
 This example shows a type of haptic control called steer by wire(less). This creates a virtual link between the angular position of two brushless motors.
 
-<iframe class="youtube" src="https://youtu.be/DDW3rwI5KEI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> This video is a practical demonstrates of this haptic control example.
+<iframe class="youtube" src="https://www.youtube.com/watch?v=DDW3rwI5KEI&t=94s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> This video is a practical demonstrates of this haptic control example.
 
-# Hardware
+## Hardware
 
 - 2x Dagor Controller
 - 2x Brushless
 - 2x Diametrically polarized magnet
 - 2x u.fl antenna
+
+## Software
 
 Wire each set-up on its own test station (3D printed base) as described in the [*getting started* section](https://bydagor.github.io/Dagor-Brushless-Controller/getting_started). Navigate int the [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller) to the [examples folder](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Examples) and find the Haptic example, download both codes and open each one on the Arduino IDE. The code for each controller is in essence the basic firmware with two modifications:
 
