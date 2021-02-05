@@ -8,12 +8,9 @@ permalink: /haptic_control
 
 # Haptic Control
 
-This example shows a type of haptic control called steer by wire(less). This creates a virtual link between the angular position of two brushless motors.
+This example shows a type of haptic control called steer by wire(less). This creates a virtual link between the angular position of two brushless motors, the video shows practical demonstrates of this haptic control example.
 
-<iframe width="420" height="345" src="https://www.youtube.com/watch?v=DDW3rwI5KEI&t=94s">
-</iframe>
-
-This video is a practical demonstrates of this haptic control example.
+<iframe width="560" height="315" src="https://www.youtube.com/embed/DDW3rwI5KEI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 ## Hardware
 
