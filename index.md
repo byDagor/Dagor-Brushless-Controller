@@ -32,6 +32,8 @@ The **Dagor Brushless Controller** was designed as a simple platform for hobbyis
 | Magnetic sensor resolution | 14 bits |
 | Temperature sensor range | -10 ~ 120°C |
 
-## Dimensions
+## Dimensions & CAD
+
+The CAD of the board can be found in the [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller/).
 
 <img src="Images/dagor_dimensions.png" width=400>

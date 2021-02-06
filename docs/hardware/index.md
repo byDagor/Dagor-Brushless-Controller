@@ -2,7 +2,7 @@
 layout: default
 title: Hardware
 nav_order: 4
-permalink: /Hardware
+permalink: /hardware
 has_children: True
 ---
 
@@ -14,4 +14,4 @@ This section is dedicated to the people that want to learn about the electronics
 
 |         WARNING          |
 |:---------------------------|
-| Touching the components may fatally damage the controller.   |
+| Touching the components during operation may fatally damage the controller.   |
