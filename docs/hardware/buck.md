@@ -15,3 +15,7 @@ The Dagor Controller has a DC-DC step-down (buck) converter that regulates the i
 |         WARNING          |
 |:---------------------------|
 | Touching this IC may fatally damage the controller (the IC is label as U3 on the board).   |
+
+It is possible to disconnect the output of the buck converter by removing the solder bridge shown in the picture bellow.
+
+![solder_bridge](Images/solder_bridge.png)

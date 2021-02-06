@@ -21,7 +21,7 @@ This example shows a type of haptic control called steer by wire(less). This cre
 
 ## Software
 
-Wire each set-up on its own test station (3D printed base) as described in the [*getting started* section](https://bydagor.github.io/Dagor-Brushless-Controller/getting_started). Navigate int the [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller) to the [examples folder](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Examples) and find the Haptic example, download both codes and open each one on the Arduino IDE. The code for each controller is in essence the basic firmware with two modifications:
+Wire each set-up on its own test station (3D printed base) as described in the [*getting started* section](https://bydagor.github.io/Dagor-Brushless-Controller/getting_started). In the project's[Github repository](https://github.com/byDagor/Dagor-Brushless-Controller) navigate to the [examples folder](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Examples) and find the Haptic example, download both codes and open each one on the Arduino IDE. The code for each controller is in essence the basic firmware with two modifications:
 
 - ESP-NOW communication between the two controllers; each controller is sending a packet with its rotor angular position to the other.
 - Control law that takes its motor's angular position and the other's angular position and tries to maintain the same angular position between the two motors.
