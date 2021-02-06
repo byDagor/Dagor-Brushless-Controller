@@ -61,6 +61,8 @@ It is required a USB to TTL adapter to flash the Dagor board; it is recommended 
 
 The **Dagor controller** has to be firmly attached to the motor's stator, fixing the center of the magnetic sensor to the center of the magnet. One easy way to do this is by designing and 3D printing a base (or test station) that fixes together a motor (with its magnet) and a controller. Here you can find a CAD to use as reference for a 3D printed base, like seen in the picture bellow.
 
+![CP2102](Images/test_station.png)
+
 ## Step 6. Testing
 
 By this point, the only thing left to do is test the set-up and tune the controller.
