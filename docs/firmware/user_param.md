@@ -1,6 +1,6 @@
 ---
 layout: default
-title: User parameters
+title: User parameters - tab a
 parent: Firmware
 nav_order: 1
 permalink: /user_param
