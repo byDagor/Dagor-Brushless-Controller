@@ -3,3 +3,5 @@ remote_theme: pmarsceill/just-the-docs
 color_scheme: foo
 
 markdown: kramdown
+
+site_favicon: favicon.ico
