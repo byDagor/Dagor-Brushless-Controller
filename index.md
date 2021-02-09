@@ -5,6 +5,8 @@ nav_order: 1
 permalink: /
 ---
 
+<link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
 # **Dagor Brushless Controller**
 
 The **Dagor Controller** is a fully integrated tiny solution for brushless-based actuators with wireless capabilities and three operation modes: angular position, velocity and voltage. It is an ESP32-based brushless controller that has an on-board magnetic encoder, a three-phase MOSFET driver, three MOSFET half-bridges, a temperature sensor and current sensing resistors.
