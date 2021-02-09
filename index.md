@@ -5,7 +5,7 @@ nav_order: 1
 permalink: /
 ---
 
-<link rel="icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 
 # **Dagor Brushless Controller**
 
