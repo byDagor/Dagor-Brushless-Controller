@@ -2,7 +2,7 @@
 layout: default
 title: ESP-NOW (wireless)
 parent: Firmware
-nav_order: 2
+nav_order: 8
 permalink: /esp_now
 ---
 

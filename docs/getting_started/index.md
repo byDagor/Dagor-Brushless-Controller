@@ -7,7 +7,7 @@ permalink: /getting_started
 
 # Getting started
 
-There's a few things to do before controlling a brushless motor with the Dagor Controller. Make sure to read this section carefully before trying to use the controller.
+There's a few things to do before controlling a brushless motor with the Dagor Controller. Make sure to read this section *carefully* before trying to use the controller.
 
 ## Step 1. Materials
 
@@ -23,7 +23,7 @@ The first step is to collect all the necessary materials together:
 
 ## Step 2. The motor
 
-This section includes the resources to prepare to use a particular brushless motor. Visit the [BLDC motor's](https://docs.simplefoc.com/bldc_motors) page to learn more about the type of brushless motors and their uses.
+This section includes the steps to prepare to use a particular brushless motor. Visit the [BLDC motor's](https://docs.simplefoc.com/bldc_motors) page to learn more about the type of brushless motors and their typical uses.
 
 ### 2.1 Phase resistance:
 
