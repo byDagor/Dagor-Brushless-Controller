@@ -10,7 +10,7 @@ permalink: /global
 
 This tab contains the libraries, functions, pins, variables and instances needed for the normal operation of the basic firmware of the **Dagor Controller**. It is not recommended to change anything in this tab, but it is encouraged to add code if the user is doing something specific such as using the free-to-use GPIOs of the controller, setting up a communication protocol, or using a library.
 
-Needed libraries. The firmware is powered by SimpeFOC; make sure to use the correct SimpleFOC version. IF another library is needed it must be included here.
+Needed libraries. The firmware is powered by (SimpeFOC)[simplefoc.com]; make sure to use the correct SimpleFOC version. IF another library is needed it must be included here.
 
 ```c++
 //SimpleFOC Version 2.0.1
@@ -18,7 +18,7 @@ Needed libraries. The firmware is powered by SimpeFOC; make sure to use the corr
 #include <SPI.h>
 ```
 
-Three phase driver (power stage)[/power_stage] pin definition.
+Three phase driver (power stage)[https://dagor.dev/power_stage] pin definition.
 
 ```c++
 //#######_THREE PHASE DRIVER - DRV8305_########

@@ -8,8 +8,9 @@ permalink: /setup_func
 
 # Setup functions
 
+Initialization of (SimpleFOC)[https://simplefoc.com]. Visit the ("Writing the code")[https://docs.simplefoc.com/code] section to learn how to configure this function.
+
 ```c++
-/ Initialization of SimpleFOC
 // Do NOT remove the delays in this function.
 void SimpleFOCinit(){
   delay(500);
@@ -53,6 +54,10 @@ void SimpleFOCinit(){
   _delay(1000);
 }
 
+```
+
+Configuration of the DRV8305 driver IC. The first thing to do before applying the FOC algorithm is to configure the driver to work with 3 PWM signals
+```c++
 //Configure DRV8305 to desired operation mode
 void drv_init(){
   delay(250);
