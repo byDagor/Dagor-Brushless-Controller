@@ -17,7 +17,7 @@ This example shows a type of haptic control called steer by wire(less); this is 
 - 2x Dagor Controller
 - 2x Brushless motor
 - 2x Diametrically polarized magnet
-- 2x u.fl antenna
+- 2x u.fl 2.4 GHz antenna
 
 ## Software
 

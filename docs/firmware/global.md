@@ -10,7 +10,7 @@ permalink: /global
 
 This tab contains the libraries, functions, pins, variables and instances needed for the normal operation of the basic firmware of the **Dagor Controller**. It is not recommended to change anything in this tab, but it is encouraged to add code if the user is doing something specific such as using the free-to-use GPIOs of the controller, setting up a communication protocol, or using a library.
 
-Needed libraries. The firmware is powered by (SimpeFOC)[simplefoc.com]; make sure to use the correct SimpleFOC version. IF another library is needed it must be included here.
+Needed libraries. The firmware is powered by (SimpeFOC)[simplefoc.com]; make sure to use the correct SimpleFOC version. If another library is needed it must be included here.
 
 ```c++
 //SimpleFOC Version 2.0.1
@@ -40,30 +40,28 @@ On-board magnetic sensor SPI chip select. The SimpleFOC library manages the SPI 
 #define sensorCS 16             //AS5147 Chip-select
 ```
 
-The temperature sensor has an analog signal 0 - 3.3V that is read with this ESP32's pin.
+The temperature sensor has an analog signal 0 - 3.3V that is read with one of the 8 ESP32's ADC channels from the ADC1 module.
 
 ```c++
 //######_TEMPERATURE SENSOR - STLM20_######
 // Datasheet: https://datasheet.lcsc.com/szlcsc/1810010411_STMicroelectronics-STLM20W87F_C129796.pdf
 #define vTemp 39
 ```
-
-Analog read pin for the power source voltage monitor.
+Another of the ESP32's ADC channels from the ADC1 module used to read the voltage from the power source voltage monitor.
 
 ```c++
 //######_Voltage Monitor_#######
 #define vMonitor 33
 ```
 
-Time management variables. Add here a variable named something like "stateT2" to add another fixed rate function caller, if needed.
-
+Time management variables. If needed, add here a variable named something like *"stateT2"* to add another fixed rate function caller.
 ```c++
 //#####_TIME MANAGEMENT_#####
 float runTime, prevT = 0, timeDif, stateT;
 int timeInterval = 1000, totalTempTime;
 ```
 
-SimpleFOC motor, driver and sensor instances. Even though the on-board sensor has SPI and ABI connected, the SPI communication is preferred to have absolute position of the motor's rotor.
+SimpleFOC motor, driver and sensor instances. Even though the on-board sensor has SPI and ABI connected, the SPI communication will be most commonly used to have absolute position of the motor's rotor.
 
 ```c++
 //####_SIMPLEFOC INSTANCES_####

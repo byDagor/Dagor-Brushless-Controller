@@ -19,3 +19,5 @@ The **Dagor Controller** has a DC-DC step-down (buck) converter (U3) that regula
 It is possible to disconnect the output of the buck converter from the 3.3V bus by removing the solder bridge shown in the picture bellow.
 
 ![solder_bridge](Images/solder_bridge.png)
+
+To learn more about the buck converter used visit the [LMR14010A datasheet](https://www.ti.com/lit/ds/symlink/lmr14010a.pdf?ts=1614702409520&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FLMR14010A).
