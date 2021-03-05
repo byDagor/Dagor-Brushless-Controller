@@ -8,7 +8,7 @@ permalink: /setup_func
 
 # Setup functions
 
-Initialization of (SimpleFOC)[https://simplefoc.com]. Visit the ("Writing the code")[https://docs.simplefoc.com/code] section to learn how to configure this function.
+Initialization of [SimpleFOC](https://simplefoc.com). Visit the []"Writing the code"](https://docs.simplefoc.com/code) section to learn how to configure this function.
 
 ```c++
 // Do NOT remove the delays in this function.

@@ -23,23 +23,27 @@ The first step is to collect all the necessary materials together:
 
 ## Step 2. The motor
 
-This section includes the steps to prepare to use a particular brushless motor. Visit the [BLDC motor's](https://docs.simplefoc.com/bldc_motors) page to learn more about the type of brushless motors and their typical uses to aid the select an adequate motor for a particular project.
+This section includes the steps to prepare to use a particular brushless motor. Visit the [BLDC motor's](https://docs.simplefoc.com/bldc_motors) page to learn more about the type of brushless motors and their typical uses to aid in the selection of an adequate motor for a particular project.
 
 ### 2.1 Phase resistance:
 
-If there is no information regarding the phase resistance of the motor from the manufacturer measure the phase resistance with a multimeter. It doesn't matter if the multimeter isn't extremely accurate, what matters is getting a rough estimate of its resistance. Usually, gimbal brushless motors have a phase resistance of around or above 10 ohms, which is considered a big resistance, and drone motors usually have a resistance bellow 1 ohm, which is considered a small resistance. Write down the phase resistance as it will be needed later.
+If there is no information regarding the phase resistance of the motor from the manufacturer measure the phase resistance with a multimeter. It doesn't matter if the multimeter isn't extremely precise, what matters is getting a rough estimate of its resistance. Usually, gimbal brushless motors have a phase resistance of around or above 10 ohms, which is considered a big resistance, and drone motors usually have a resistance bellow 1 ohm, which is considered a small resistance. Write down the phase resistance as it will be needed later.
 
 ### 2.2 Pole pair number
 
-Usually, the manufacturer of the motor will rate the motor as the following **24N22P** where **N** means the number of coils and **P** means the number of poles (magnets). To know the number of pole pairs divide **P** (poles) by two, in the case of this example 22/2 = 11 pole pairs. If the manufacturer fails to provide this rating and if the magnets are exposed, the pole pair number can be found by counting the magnets on the motor's rotor and dividing by two.
+Usually, the manufacturer of the motor will rate the motor something similar to this: **24N22P**, where **N** means the number of coils and **P** means the number of poles (magnets). To know the number of pole pairs divide **P** (poles) by two, in the case of this example 22/2 = 11 pole pairs. If the manufacturer fails to provide this rating and if the magnets are exposed, the pole pair number can be found by counting the magnets on the motor's rotor and dividing by two.
 
 ### 2.3 Attaching the magnet
 
-The **Dagor Controller** has an on-board magnetic sensor to measure the angular position of the motor's rotor, this is critical for the [FOC (field oriented control) algorithm](https://docs.simplefoc.com/foc_theory). At this point the magnet provided with the controller has to be attached firmly to the motor's rotor. There are two easy ways to do this: design and 3D print a base for the magnet and hot glue it to the motor's shaft (very easy to remove) or super glue the magnet directly to the motor's shaft (not so easy to remove).
+The *Dagor Controller* has an on-board magnetic sensor to measure the angular position of the motor's rotor, this is critical for the [FOC (field oriented control) algorithm](https://docs.simplefoc.com/foc_theory). At this point the magnet provided with the controller has to be firmly attached to the motor's rotor. There are two easy ways to do this: design and 3D print a base for the magnet and hot glue it to the motor's shaft (very easy to remove) or super glue the magnet directly to the motor's shaft (not so easy to remove).
 
 ## Step 3. Arduino IDE and SimpleFOC
 
 The firmware was developed for the Arduino development environment and is powered by the [SimpleFOC project](https://www.simplefoc.com/). Setting up the Arduino IDE properly will assure an effortless way to work on a project with the *Dagor Controller*. Follow the [installation instructions](https://docs.simplefoc.com/installation) to install the SimpleFOC library and follow the [ESP32 microcontroller set-up page](https://docs.simplefoc.com/microcontrollers#esp32-boards-support) to configure the Arduino IDE to support ESP32 boards. It is recommended to update the board's firmware **before** connecting the motor to the board.
+
+|       NOTE      |
+|:---------------------------|
+| The firmware hasn't been updated to support SimpleFOC v2.1, download version v2.0.2 from the [github repository](https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.0.2) until the firmware is updated. |
 
 ## Step 4. Flashing the firmware
 
@@ -52,10 +56,15 @@ To power on the *Dagor Controller* connect 5 - 24V to the input bus. Positive vo
 |         WARNING          |
 |:---------------------------|
 | Make sure the supplied voltage is connected correctly, there is NO reverse voltage protection! |
+| Avoid touching the components while the board is powered, failing to do so could fatally damage the controller. |
 
 ### 4.2 Downloading the firmware and changing user parameters
 
 Download the most recent firmware version from the [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) and open it on the Arduino IDE. Visit the [firmware section](https://bydagor.github.io/Dagor-Brushless-Controller/Firmware) to learn about the firmware structure and version name.
+
+|       NOTE      |
+|:---------------------------|
+| The firmware hasn't been updated to support SimpleFOC v2.1, use firmware version 1.0 with SimpleFOC v2.0.2. |
 
 Given each individual set-up there's a few parameters that must be changed in the firmware. By this point the pole pair number, the phase resistance, the power supply voltage should be known. Visit the [user parameters section](https://bydagor.github.io/Dagor-Brushless-Controller/user_param) to learn how to update these parameters in the firmware. Compile the code to make sure there will be no errors moving forward.
 

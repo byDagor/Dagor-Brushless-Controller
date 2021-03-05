@@ -12,7 +12,7 @@ There are a few parameters that have to be tweaked for each individual set-up. T
 
 First there are the variables dependent on the user's set-up:
 
-- Pole pair number: the number of pole pairs the brushless motor to use has. To learn how to obtain this number visit the (getting started section)[https://dagor.dev/getting_started#22-pole-pair-number].
+- Pole pair number: the number of pole pairs the brushless motor to use has. To learn how to obtain this number visit the (getting started section)[https://docs.dagor.dev/getting_started#22-pole-pair-number].
 - Phase winding resistance: the resistance in the phase winding in the brushless motor. This number is used to set an appropriate voltage limit to limit the maximum current with SimpleFOC. If the phase resistance is unknown and can't be measured with a multimeter assume a low resistance and over-write the voltage limit to 1V. If this voltage limit is too small (motor fails to move) increase the number until the desired torque is achieved.
 - Voltage of the power source: state the voltage of the power source, whether it's a battery, a PSU or equivalent.
 - Maximum current: alongside the phase resistance the maximum current allowed is used to calculate a rough voltage limit to stay within safe limits.
@@ -27,7 +27,7 @@ byte sourceVoltage = 12;      //Voltage of your power source [Volts]
 byte maxCurrent = 2;          //Rough approximation of max current [Amps]
 ```
 
-Second there are the control loops parameters, to obtain the desired response out of the controller these need to be tuned. The parameters can be tuned via the Serial Monitor sending a [command](https://docs.simplefoc.com/communication) which consists of a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To the right on the snip of code bellow there are the special characters that tune each corresponding parameter. Make sure to write the final values of the parameters to update the firmware and upload it again.
+Second there are the control loops parameters, to obtain the desired response out of the controller these need to be tuned. The parameters can be tuned via the Serial Monitor sending a **command** which consists of a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To the right on the snip of code bellow there are the special characters that tune each corresponding parameter. Make sure to write the final values of the parameters to update the firmware and upload it again.
 
 Code snippet:
 

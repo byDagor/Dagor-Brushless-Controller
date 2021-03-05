@@ -6,7 +6,7 @@ nav_order: 3
 permalink: /ball_and_wheel
 ---
 
-# Furuta furuta_pendulum
+# Control of the Ball and Wheel Balance System
 
 Visit the [Github repository](https://github.com/byDagor/Ball-and-wheel) to find the code and CAD of this project.
 

@@ -24,7 +24,7 @@ The Maximum continuous current of the **Dagor Controller** depends on the qualit
 
 <img src="Images/temp_sensor_dagor.png" width=400>
 
-Visit the [Loop functions](loop_func.md) tab in the [firmware](firmware.md) section to learn how to use the ESP32's ADC to transform the analog signal from the sensor into a temperature value.
+Visit the [Loop functions](loop_func) tab in the [firmware](firmware) section to learn how to use the ESP32's ADC to transform the analog signal from the sensor into a temperature value.
 
 ## Temperature vs. current curve
 
