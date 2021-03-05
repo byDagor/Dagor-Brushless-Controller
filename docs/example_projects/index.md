@@ -10,4 +10,4 @@ has_children: True
 
 Collection of the few projects I've done so far with the *Dagor controller*.
 
-![zoom](Images/zoom.jpg)
+<img src="Images/zoom.jpg" width=550>
