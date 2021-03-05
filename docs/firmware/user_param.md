@@ -12,7 +12,7 @@ There are a few parameters that have to be tweaked for each individual set-up. T
 
 First there are the variables dependent on the user's set-up:
 
-- Pole pair number: the number of pole pairs the brushless motor to use has. To learn how to obtain this number visit the (getting started section)[https://docs.dagor.dev/getting_started#22-pole-pair-number].
+- Pole pair number: the number of pole pairs the brushless motor to use has. To learn how to obtain this number visit the [getting started section](https://docs.dagor.dev/getting_started#22-pole-pair-number).
 - Phase winding resistance: the resistance in the phase winding in the brushless motor. This number is used to set an appropriate voltage limit to limit the maximum current with SimpleFOC. If the phase resistance is unknown and can't be measured with a multimeter assume a low resistance and over-write the voltage limit to 1V. If this voltage limit is too small (motor fails to move) increase the number until the desired torque is achieved.
 - Voltage of the power source: state the voltage of the power source, whether it's a battery, a PSU or equivalent.
 - Maximum current: alongside the phase resistance the maximum current allowed is used to calculate a rough voltage limit to stay within safe limits.
@@ -38,14 +38,14 @@ float ti = 2.5;               //Velocity control loop INTEGRAL gain value       
 float lpFilter = 0.000;       //Velocity measurement filter                     - F_
 float kp = 10;                //Position control loop PROPORTIONAL gain value   - K_
 float voltageRamp = 25;       //Change in voltage allowed [Volts per sec]       - R_
-float voltageLimit = phaseRes*maxCurrent;   //Voltage limit                     - L_
 float velocityLimit = 2000;   //Velocity limit [rpm]                            - V_
+float voltageLimit = phaseRes*maxCurrent;   //Voltage limit                     - L_
 ```
 
 Third there are more parameters for a more specific configuration and are not necessary to be modified to obtain a proper operation out of the controller. If the application of the controller is yet unknown the default values will work.
 
-- Maximum temperature: set the threshold that defines an over-temperature condition for the temperature of the (power stage)[https://dagor.dev/power_stage].
-- Over temperature time span: number of seconds an over-temperature condition has to maintain to trigger an over-temperature shutdown. Sometimes inrush current can make the temperature sensor detect an over-temperature condition for a few miliseconds, but after that the temperature drops. This parameter makes sure the temperature is actually high and the sensor didn't detect an inrush current.
+- Maximum temperature: set the threshold that defines an over-temperature condition for the temperature of the [power stage](power_stage).
+- Over temperature time span: number of seconds an over-temperature condition has to maintain to trigger an over-temperature shutdown. Sometimes inrush current can make the temperature sensor detect an over-temperature condition for a few milliseconds, but after that the temperature drops. This parameter makes sure the temperature is actually high and the sensor didn't detect an inrush current.
 - Fixed frequency of loop functions: the void loop of the firmware includes some functions that run at a slower rate that the general loop. This parameter allows to change the frequency these functions are called. For the default loop functions a slow rate of 5 hertz is more than enough, if the user defines its own functions maybe a faster or slower call rate is needed.
 
 Code snippet:

@@ -8,4 +8,6 @@ has_children: True
 
 # Example projects
 
-Collection of the few projects I've done so far with the controller.
+Collection of the few projects I've done so far with the *Dagor controller*.
+
+![zoom](Images/zoom.jpg)
