@@ -22,8 +22,9 @@ bool faultTrig = false;
 //######_MAGNETIC SENSOR - AS5147_######
 // Datasheet: https://ams.com/documents/20143/36005/AS5147_DS000307_2-00.pdf
 #define sensorCS 16             //AS5147 Chip-select
-#define encA 32                 //Quadrature A signal
-#define encB 17                 //Quadrature B signal
+//A and B encoder inputs
+#define Int1 32             // interrupt 0
+#define Int2 33             // interrupt 1
 
 //######_TEMPERATURE SENSOR - STLM20_######
 // Datasheet: https://datasheet.lcsc.com/szlcsc/1810010411_STMicroelectronics-STLM20W87F_C129796.pdf
@@ -37,12 +38,14 @@ float runTime, prevT = 0, timeDif, stateT;
 int timeInterval = 1000, totalTempTime;
 
 //####_SIMPLEFOC INSTANCES_####
-BLDCMotor motor = BLDCMotor(pp);                                          //BLDCMotor instance
-BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27);                       //3PWM Driver instance
+BLDCMotor motor = BLDCMotor(pp);   //BLDCMotor instance
+BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27);     //3PWM Driver instance
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);       //SPI Magnetic sensor instance
-Encoder encoder = Encoder(encA, encB, 1024);                              //AB encoder instance
-void doA(){encoder.handleA();}
-void doB(){encoder.handleB();}
+
+
+//####_COMMANDER INTERFACE_####
+Commander command = Commander(Serial);
+void onMotor(char* cmd){ command.motor(&motor, cmd); }
 
 //######_SETUP FUNCTIONS INIT_######
 void SimpleFOCinit();
@@ -52,6 +55,6 @@ void drv_init();
 void timeManagement();
 void tempStatus(bool debug = false);
 void voltageMonitor(bool debug = false);
+void printCurrents();
 void rotorPosition();
 void faultStatus();
-String serialReceiveUserCommand();

@@ -43,7 +43,7 @@ void tempStatus(bool debug){
   
 }
 
-// Monitor the voltage of the power source. Relevant when using battery powered devices.
+// Monitor the voltage of the power source. Mainly used for battery powered devices;
 void voltageMonitor(bool debug){
   
   int rawVoltage = analogRead(vMonitor);
@@ -65,7 +65,7 @@ void rotorPosition(){
 // Fault status and manager for the DRV8305
 // Datahseet pages 37 and 38
 void faultStatus(){
-  // Read nFault pin from DRV8305 - LOW == error / HIGH == normal operation
+  //Read nFault pin from DRV8305 - LOW == error / HIGH == normal operation
   int fault = digitalRead(nFault);
   
   if(fault == LOW && faultTrig == false){
@@ -107,26 +107,4 @@ void faultStatus(){
     Serial.println(ft7,BIN);
     Serial.println(ft8,BIN);
   }
-}
-
-// Utility function enabling serial communication
-String serialReceiveUserCommand() {
-  // A string to hold incoming data
-  static String received_chars;
-  String command = "";
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-      // execute the user command
-      command = received_chars;
-      // reset the command buffer 
-      received_chars = "";
-    }
-  }
-  return command;
 }

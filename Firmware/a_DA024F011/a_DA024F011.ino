@@ -4,46 +4,118 @@
 //########################################################
 
 // The firmware is separated into 6 tabs (a - f), make sure all files are stored in the folder 
-// named a_DA024F010.
+// named a_DA024F011.
 
-// This tab cointains the variables to customize the controller.
+// This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
 // Bellow are the variables dependent on the user's set-up. 
-// If the phase resistance is unknown and can't be meausered with a multimeter assume a low resistance
-// and over-write the voltage limit to 1V. If this limit is too small increase the number until the desired
-// torque is achieved. 
+// If the phase resistance is unknown and can't be meausered with a multimeter assume a low resistance.
 
 //#######_USER VARIABLES_#######
 byte pp = 7;                  //BLDC motor number of pole pairs
 float phaseRes = 0.560;       //Phase winding resistance [ohms]
-byte sourceVoltage = 12;      //Voltage of your power source [Volts]
-byte maxCurrent = 2;          //Rough approximation of max current [Amps]
-String controlType = "C2";    //control type: C2 -> position, C1 -> velocity, C0 -> torque (voltage)
+float sourceVoltage = 12;      //Voltage of your power source [Volts]
+float maxCurrent = 1.25;        //Very rough approximation of max current [Amps]
+String controlType = "C2";    //control type: C0 -> torque (voltage)
+                                           // C1 -> velocity
+                                           // C2 -> angular position
 
 // Bellow are the control loops parameters, to obtain the desired response out of the controller 
-// they need to be tuned. These parameters can be tuned via the Serial Monitor sending a special 
-// character next to the desired value. For example, to change the Position control loop PROPORTIONAL 
-// gain from 25 to 10 the user writes in the Serial Monitor K10; to change the Velocity control loop 
-// INTEGRAL gain from 2.5 to 3 the user writes I3. To the right of the variables bellow there are 
-// the special characters that tune each corresponding parameter. Make sure to write the final values 
-// of the parameters after tuning to update the firmware and upload it again.
+// they need to be tuned. These parameters can be tuned via the "Commander" interface, which is 
+// based on ASCII character command ids. There are two types of commands, a fetch and a set.
+// A fetch command will have the following structure:
+//                               motor ID ->  MLC <- Current
+//                                             ^
+//                                             |
+//                                           Limits
+//
+// The example above will show the current limit set to the controller 
+//
+// A set command will have the following structure:
+//                               motor ID ->  MVI3.5 <- value
+//                                             ^^
+//                                            /  \
+//                          Velocity controller  Integral gain
+//
+// The example above will set the Integral gain value of the velocity control loop to 3.5
+//
+// Changing the set-point (target) looks like this:
+//                               motor ID ->  M6.3  <- value
+//
+// The example above will rotate the motor's rotor one full turn, given angular position control. 
+//
+// These commands can be sent through the Serial Monitor, make sure to set the baud rate to 115200 and 
+// "Newline". To the right of the variables bellow there are the characters that would be used to fetch
+// or set each individual parameter. There is a cheat-sheet of the commands at the bottom of this tab.
+// Make sure to write the final values of the parameters after tuning to update the firmware and 
+// upload it again.
 
 //#######_CONTROLLER PARAMETERS_#######
-float ki = 0.002;             //Velocity control loop PROPORTIONAL gain value   - P_
-float ti = 2.5;               //Velocity control loop INTEGRAL gain value       - I_
-float lpFilter = 0.000;       //Velocity measurement low-pass filter            - F_
-float kp = 10;                //Position control loop PROPORTIONAL gain value   - K_
-float voltageRamp = 25;       //Change in voltage allowed [Volts per sec]       - R_
-float voltageLimit = phaseRes*maxCurrent;   //Voltage limit [Volts]             - L_
-float velocityLimit = 2000;   //Velocity limit [rpm]                            - V_
+float voltageLimit = phaseRes*maxCurrent;   //Voltage limit [Volts]             - LU
+float vp = 0.002;             //Velocity control loop PROPORTIONAL gain value   - VP
+float vi = 3.0;               //Velocity control loop INTEGRAL gain value       - VI
+float vd = 0;                 //Velocity control loop DERIVATIVE gain value     - VD
+float lpVelFilter = 0.000;    //Velocity measurement low-pass filter            - VF
+float ap = 10;                //Position control loop PROPORTIONAL gain value   - AP
+float ai = 0;                 //Position control loop INTEGRAL gain value       - AI
+float ad = 0;                 //Position control loop DERIVATIVE gain value     - AD
+float lpPosFilter = 0.000;    //Position measurment low-pass filter             - AF
+float voltageRamp = 300;      //Change in voltage allowed [Volts per sec]       - VR
+float velocityLimit = 2000;   //Velocity limit [rpm]                            - LV
 
-// Bellow are extra parameters that can be easily configured for the desired application of the board,
-// if the application is unknown the default values will work.
+// Bellow are extra parameters that can be further configured for the desired application or project,
+// if the application is unknown the default values will work. It is recommended to change these 
+// parameters AFTER feeling comfortable using the controller.
 
 //########_EXTRA CONFIGURATON_##########
-byte maxTemp = 80;            //Maximum temperature [°C]
-float overTempTime = 3;       //Time in an over-temperature senario to disable the controller [seconds]
-int fixedFreq = 5;            //Frequency of the fixed rate functions in loop [hertz]
-String sensorType = "SPI";    //There are two possible position sensors:
-                              //SPI -> absolute position sensor (14-bits)
-                              //ABI -> quadrature incremental econder (11-bits)
+byte maxTemp = 80;            // Maximum temperature if the power-stage [°C]
+float overTempTime = 3;       // Time in an over-temperature senario to disable the controller [seconds]
+float sensorOffset = 0.0;     // Position offset, used to define an absolute 0 position on the motor's rotor [rads]
+int motionDownSample = 3;     // Downsample the motion control loops with respect to the torque control loop [amoount of loops]
+int callerFixedFreq = 5;      // Frequency of the fixed rate function caller in void loop [hertz]
+float alignStrength = 0.5;    // Percentage of power used to calibrate the sensor on start-up
+char motorID = 'M';           // Motor ID used for command can be any character, useful for multi board proyects
+bool focModulation = true;    // Field oriented control modulation type: true -> Sine PWM
+                                                                     // false -> Space Vector PWM
+bool skipCalibration = false; //Skip the calibration if the set-up won't change in the future
+                              //electric angle offset and natural direction printed on start-up
+const float elecOffset = 0.0; //Printed as: "MOT: Zero elec. angle: X.XX"
+String natDirection = "CW";   //can be either CW or CCW   
+
+
+//#######_LIST OF COMMANDS_#######
+
+/*
+V - Velocity PID controller
+  P - proportional gain
+  I - integral gain
+  D - derivative gain
+A - Angle PID controller
+  P - proportional gain
+  I - integral gain
+  D - derivative gain
+L - Limits
+  C - Current
+  U - Voltage
+  V - Velocity
+C - Motion control type config
+  D - downsample motion loop
+  0 - torque
+  1 - velocity
+  2 - angle
+E - Motor status (enable/disable)
+  0 - enable
+  1 - disable
+R - Motor phase resistance
+S - Sensor offsets
+  M - sensor offset
+  E - sensor electrical zero
+M - Monitoring control
+  D - downsample monitoring
+  C - clear monitor
+  S - set monitoring variables
+  G - get variable value
+’’ - Target get/set
+*/
+
+// Visit https://docs.simplefoc.com/commander_interface to learn more about the Commander Interface.
