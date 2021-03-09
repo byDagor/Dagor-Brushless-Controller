@@ -41,17 +41,13 @@ The *Dagor Controller* has an on-board magnetic sensor to measure the angular po
 
 The firmware was developed for the Arduino development environment and is powered by the [SimpleFOC project](https://www.simplefoc.com/). Setting up the Arduino IDE properly will assure an effortless way to work on a project with the *Dagor Controller*. Follow the [installation instructions](https://docs.simplefoc.com/installation) to install the SimpleFOC library and follow the [ESP32 microcontroller set-up page](https://docs.simplefoc.com/microcontrollers#esp32-boards-support) to configure the Arduino IDE to support ESP32 boards. It is recommended to update the board's firmware **before** connecting the motor to the board.
 
-|       NOTE      |
-|:---------------------------|
-| The firmware hasn't been updated to support SimpleFOC v2.1, download version v2.0.2 from the [github repository](https://github.com/simplefoc/Arduino-FOC/releases/tag/v2.0.2) until the firmware is updated. |
-
 ## Step 4. Flashing the firmware
 
 This section includes the relevant steps to update the firmware on a brand new *Dagor Controller*.
 
 ### 4.1 Powering-on the Dagor Controller
 
-To power on the *Dagor Controller* connect 5 - 24V to the input bus. Positive voltage and 0V are marked on the board as Vd and GND. The first time the controller is powered on the *YELLOW* LED will start blinking. This is to show that the controller is working and ready for a firmware update.
+To power on the *Dagor Controller* connect 5 - 24V to the input bus. Positive voltage and 0V are marked on the board as **VD** and **GND**. The first time the controller is powered on the *YELLOW* LED will start blinking. This is to show that the controller is working and ready for a firmware update.
 
 |         WARNING          |
 |:---------------------------|
@@ -62,15 +58,11 @@ To power on the *Dagor Controller* connect 5 - 24V to the input bus. Positive vo
 
 Download the most recent firmware version from the [Github repository](https://github.com/byDagor/Dagor-Brushless-Controller/tree/master/Firmware) and open it on the Arduino IDE. Visit the [firmware section](https://bydagor.github.io/Dagor-Brushless-Controller/Firmware) to learn about the firmware structure and version name.
 
-|       NOTE      |
-|:---------------------------|
-| The firmware hasn't been updated to support SimpleFOC v2.1, use firmware version 1.0 with SimpleFOC v2.0.2. |
-
 Given each individual set-up there's a few parameters that must be changed in the firmware. By this point the pole pair number, the phase resistance, the power supply voltage should be known. Visit the [user parameters section](https://bydagor.github.io/Dagor-Brushless-Controller/user_param) to learn how to update these parameters in the firmware. Compile the code to make sure there will be no errors moving forward.
 
 ### 4.3 Controller flash mode
 
-It is required a USB to TTL adapter to flash the *Dagor controller*; it is recommended to use the CP2102 module. Solder (optionally) any type of headers style to the board to be able to easily connect and disconnect the module. Once the adapter is connected to the board (as shown in the picture bellow) and the board is powered, to put the *Dagor controller* in flash mode press and hold the *_Reset_* Button, press once the *_Boot_* Button and then release the *_Reset_* Button. If done correctly the Serial monitor of the Arduino IDE should print that the board is *waiting for download*. After updating the firmware with the correct parameters (section 4.2), press the upload button on the Arduino IDE and the ESP32 will begin flashing, after it's done press the *Reset* Button once and the code should start running.
+It is required a USB to TTL adapter to flash the *Dagor controller*; it is recommended to use the CP2102 module. Solder (optionally) any type of headers style to the board to be able to easily connect and disconnect the module. Once the adapter is connected to the board (as shown in the picture bellow) and the board is powered, to put the *Dagor controller* in flash mode press and hold the *_Reset_* Button, press once the *_Boot_* Button and then release the *_Reset_* Button. If done correctly the Serial monitor of the Arduino IDE should print that the board is *waiting for download*. After updating the firmware with the correct parameters (section 4.2), press the upload button on the Arduino IDE and the ESP32 will begin flashing, after it's done press the *_Reset_* Button once and the code should start running.
 
 ![CP2102](Images/DagorCP2102.png)
 
@@ -90,7 +82,9 @@ Connect the *Dagor controller* to the motor and the USB to TTL module, power the
 
 ### 6.2 Tuning the controller
 
-Tuning the controller is essential to obtain the desired response out of the motors movements, avoid oscillations and avoid vibrations. The serial monitor is used to tune the controller by sending [commands](https://docs.simplefoc.com/communication) to it. These [commands](https://docs.simplefoc.com/communication) are implemented directly into SimpleFOC, and each one consists of a special character next to the desired value. For example, to change the Position control loop PROPORTIONAL gain from 25 to 10 the user writes in the Serial Monitor *K10*; to change the Velocity control loop INTEGRAL gain from 2.5 to 3 the user writes *I3*. To check the actual value of the Position control loop PROPORTIONAL gain the user writes *K* in the serial monitor. Please refer to the [Motor commands](https://docs.simplefoc.com/communication) to learn about all the different commands and please visit the [motion control implementation](https://docs.simplefoc.com/motion_control_implementation) to learn about the control loops and control theory.
+Tuning the controller is essential to obtain the desired response out of the motors movements, avoid oscillations and avoid vibrations. The Serial monitor is used to tune the controller by sending [commands](https://docs.simplefoc.com/communication) to it. These [commands](https://docs.simplefoc.com/communication) are implemented in the SimpleFOC *Commander interface*.
+
+Please refer to the [Commander interface](https://docs.simplefoc.com/communication) page to learn about all the different commands and please visit the [motion control implementation](https://docs.simplefoc.com/motion_control_implementation) to learn about the control loops and control theory.
 
 ### 6.3 Share
 
