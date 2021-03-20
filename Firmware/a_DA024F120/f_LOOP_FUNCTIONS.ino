@@ -25,7 +25,7 @@ void tempStatus(bool debug){
   }
   
   if (temp >= maxTemp && tFlag == false){
-    int tempTime = micros();
+    unsigned long tempTime = micros();
     totalTempTime += tempTime;
 
     //If temperature is high for [overTempTime] seconds disable controller
@@ -67,14 +67,14 @@ void printCurrents(bool dcEquivalent){
   
   if(dcEquivalent){
     float current_magnitude = current_sense.getDCCurrent();
-    Serial.println(current_magnitude*1000); // milli Amps
+    Serial.println(current_magnitude); // milli Amps
   }else{
     PhaseCurrent_s currents = current_sense.getPhaseCurrents();
-    Serial.print(currents.a*1000); // milli Amps
+    Serial.print(currents.a); // milli Amps
     Serial.print("\t");
-    Serial.print(currents.b*1000); // milli Amps
+    Serial.print(currents.b); // milli Amps
     Serial.print("\t");
-    Serial.println(currents.c*1000); // milli Amps
+    Serial.println(currents.c); // milli Amps
   }
 
 }

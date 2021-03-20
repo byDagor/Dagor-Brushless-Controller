@@ -31,7 +31,7 @@ bool faultTrig = false;
 #define vMonitor 33
 
 //#####_TIME MANAGEMENT_#####
-float runTime, prevT = 0, timeDif, stateT;
+unsigned long runTime, prevT = 0, timeDif, stateT;
 int timeInterval = 1000, totalTempTime;
 
 //####_SIMPLEFOC INSTANCES_####
@@ -53,7 +53,6 @@ void drv_init();
 void timeManagement();
 void tempStatus(bool debug = false);
 void voltageMonitor(bool debug = false);
-void printCurrents();
 void rotorPosition();
 void faultStatus();
 void printCurrents(bool dcEquivalent = false);

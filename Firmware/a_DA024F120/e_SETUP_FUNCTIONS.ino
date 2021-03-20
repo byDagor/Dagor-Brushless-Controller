@@ -26,10 +26,10 @@ void SimpleFOCinit(){
   current_sense.driverSync(&driver);
   
   // link the current sense to the motor
-  //motor.linkCurrentSense(&current_sense);
-  //motor.torque_controller = TorqueControlType::foc_current; 
+  motor.linkCurrentSense(&current_sense);
+  motor.torque_controller = TorqueControlType::dc_current; 
 
-  motor.torque_controller = TorqueControlType::voltage; 
+  //motor.torque_controller = TorqueControlType::voltage; 
   
 
   if (focModulation) motor.foc_modulation = FOCModulationType::SinePWM;
@@ -40,15 +40,28 @@ void SimpleFOCinit(){
   else if (controlType == "C1") motor.controller = MotionControlType::velocity;
   else motor.controller = MotionControlType::angle;
 
-/*
+  motor.voltage_limit = phaseRes*maxCurrent; 
+  // Measured phase resistance [ohms]
+  motor.phase_resistance = phaseRes;
+  motor.current_limit = maxCurrent; 
+
+  // Sensor aligning voltage
+  motor.voltage_sensor_align = (maxCurrent*phaseRes)*alignStrength;
+
   // Current PI controller parameters
-  motor.PID_current_q.P = 5;
-  motor.PID_current_q.I= 1000;
-  motor.PID_current_d.P= 5;
-  motor.PID_current_d.I = 1000;
-  motor.LPF_current_q.Tf = 0.002; // 1ms default
-  motor.LPF_current_d.Tf = 0.002; // 1ms default
-*/
+  motor.PID_current_q.P = 0.01;
+  motor.PID_current_q.I = 10;
+  motor.PID_current_q.D = 0;
+  motor.PID_current_q.limit = motor.voltage_limit;
+  motor.PID_current_q.output_ramp = 1e6;
+  motor.LPF_current_q.Tf = 0.001;
+
+  motor.PID_current_d.P = 0.01;
+  motor.PID_current_d.I = 10;
+  motor.PID_current_d.D = 0;
+  motor.PID_current_d.limit = motor.voltage_limit;
+  motor.PID_current_d.output_ramp = 1e6;
+  motor.LPF_current_d.Tf = 0.001;
  
   // velocity PI controller parameters
   motor.PID_velocity.P = vp;
@@ -71,14 +84,6 @@ void SimpleFOCinit(){
 
   // Downsampling value of the motion control loops with respect to torque loops
   motor.motion_downsample = motionDownSample; // - times (default 0 - disabled)
-
-  //motor.voltage_limit = phaseRes*maxCurrent; 
-  // Measured phase resistance [ohms]
-  motor.phase_resistance = phaseRes;
-  motor.current_limit = maxCurrent; 
-
-  // Sensor aligning voltage
-  motor.voltage_sensor_align = (maxCurrent*phaseRes)*alignStrength;
 
   motor.useMonitoring(Serial);      // use monitoring functionality
   motor.init();                     // initialise motor
@@ -109,6 +114,20 @@ void drv_init(){
   //Serial.println(resp2, BIN);
   
   _delay(500);
+
+  digitalWrite(cs, LOW);
+  int resp3 = SPI.transfer(B01010111);
+  int resp4 = SPI.transfer(B00000000);
+  digitalWrite(cs, HIGH);
+  //Serial.println(resp3);
+  //Serial.println(resp4);
+
+  digitalWrite(cs, LOW);
+  int resp5 = SPI.transfer(B01010000);
+  int resp6 = SPI.transfer(B00000000);
+  digitalWrite(cs, HIGH);
+  //Serial.println(resp5);
+  //Serial.println(resp6);
 
   Serial.println("DRIVER: enGate Enabled");
   digitalWrite(enGate, HIGH);

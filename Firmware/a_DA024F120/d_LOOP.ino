@@ -23,7 +23,7 @@ void loop() {
     faultStatus();
     //voltageMonitor(true);
     //rotorPosition();
-    //printCurrents();
+    printCurrents(true);
   }
   
 }

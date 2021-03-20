@@ -8,6 +8,8 @@
 
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
+//########################################################
+
 // Below are the variables dependent on the user's set-up. 
 // If the phase resistance is unknown and can't be meausered with a multimeter assume a low resistance.
 
@@ -16,7 +18,7 @@ byte pp = 7;                  //BLDC motor number of pole pairs
 float phaseRes = 0.560;       //Phase winding resistance [ohms]
 float sourceVoltage = 12;      //Voltage of your power source [Volts]
 float maxCurrent = 1.25;        //Very rough approximation of max current [Amps]
-String controlType = "C2";    //control type: C0 -> torque (voltage)
+String controlType = "C0";    //control type: C0 -> torque (voltage)
                                            // C1 -> velocity
                                            // C2 -> angular position
 
