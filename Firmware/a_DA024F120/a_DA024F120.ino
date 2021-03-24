@@ -14,13 +14,14 @@
 // If the phase resistance is unknown and can't be meausered with a multimeter assume a low resistance.
 
 //#######_USER VARIABLES_#######
-byte pp = 7;                  //BLDC motor number of pole pairs
-float phaseRes = 0.560;       //Phase winding resistance [ohms]
-float sourceVoltage = 12;      //Voltage of your power source [Volts]
-float maxCurrent = 1.25;        //Very rough approximation of max current [Amps]
-String controlType = "C0";    //control type: C0 -> torque (voltage)
-                                           // C1 -> velocity
-                                           // C2 -> angular position
+const byte pp = 7;                             //BLDC motor number of pole pairs
+const float phaseRes = 0.560;                  //Phase winding resistance [ohms]
+const float sourceVoltage = 12;                //Voltage of your power source [Volts]
+const float maxPowersourceCurrent = 3.0;        //Very rough approximation of max current from the power source [Amps]
+                                         //This is not the phase current through the motor.
+const String controlType = "C0";               //control type: C0 -> torque (voltage)
+                                                      // C1 -> velocity
+                                                      // C2 -> angular position
 
 // Below are the control loops parameters, to obtain the desired response out of the controller 
 // they need to be tuned. These parameters can be tuned via the "Commander" interface, which is 
@@ -53,14 +54,16 @@ String controlType = "C0";    //control type: C0 -> torque (voltage)
 // upload it again.
 
 //#######_CONTROLLER PARAMETERS_#######
-float voltageLimit = phaseRes*maxCurrent;   //Voltage limit [Volts]             - LU
-float vp = 0.002;             //Velocity control loop PROPORTIONAL gain value   - VP
-float vi = 3.0;               //Velocity control loop INTEGRAL gain value       - VI
+float vp = 0.1;               //Velocity control loop PROPORTIONAL gain value   - VP
+float vi = 1;                 //Velocity control loop INTEGRAL gain value       - VI
 float vd = 0;                 //Velocity control loop DERIVATIVE gain value     - VD
 float lpVelFilter = 0.000;    //Velocity measurement low-pass filter            - VF
+const float cp = 10;
+const float ci = 100;
+const float cd = 0;
 float ap = 10;                //Position control loop PROPORTIONAL gain value   - AP
 float ai = 0;                 //Position control loop INTEGRAL gain value       - AI
-float ad = 0;                 //Position control loop DERIVATIVE gain value     - AD
+float ad = 1;                 //Position control loop DERIVATIVE gain value     - AD
 float lpPosFilter = 0.000;    //Position measurment low-pass filter             - AF
 float voltageRamp = 300;      //Change in voltage allowed [Volts per sec]       - VR
 float velocityLimit = 2000;   //Velocity limit [rpm]                            - LV
@@ -73,7 +76,7 @@ float velocityLimit = 2000;   //Velocity limit [rpm]                            
 byte maxTemp = 80;            // Maximum temperature if the power-stage [°C]
 float overTempTime = 3;       // Time in an over-temperature senario to disable the controller [seconds]
 float sensorOffset = 0.0;     // Position offset, used to define an absolute 0 position on the motor's rotor [rads]
-int motionDownSample = 3;     // Downsample the motion control loops with respect to the torque control loop [amount of loops]
+int motionDownSample = 0;     // Downsample the motion control loops with respect to the torque control loop [amount of loops]
 int callerFixedFreq = 5;      // Frequency of the fixed rate function caller in void loop [hertz]
 float alignStrength = 0.5;    // Percentage of power used to calibrate the sensor on start-up
 char motorID = 'M';           // Motor ID used for the commander interface, can be any character 
@@ -108,8 +111,8 @@ String natDirection = "CW";   // Can be either CW or CCW
       1 - velocity
       2 - angle
     E - Motor status (enable/disable)
-      0 - enable
-      1 - disable
+      0 - disable
+      1 - enable
     R - Motor phase resistance
     S - Sensor offsets
       M - sensor offset

@@ -13,6 +13,13 @@ void loop() {
   command.run();
   motor.move();
 
+  //float ea = motor.electricalAngle();
+  //DQCurrent_s current = current_sense.getFOCCurrents(ea);
+  //Serial.print(current.d);
+  //Serial.print(", ");
+  //Serial.println(current.q);
+  //printCurrents(true);
+
   // Fixed rate functions
   // Functions inside this "if" will execute at a 5hz rate. Un/ comment the functions that you wish to use.
   if(stateT >= 1000000/callerFixedFreq){
@@ -23,7 +30,8 @@ void loop() {
     faultStatus();
     //voltageMonitor(true);
     //rotorPosition();
-    printCurrents(true);
+    //printCurrents(true);
+  
   }
   
 }

@@ -197,9 +197,9 @@ int BLDCMotor::alignSensor() {
     // align the electrical phases of the motor and sensor
     // set angle -90(270 = 3PI/2) degrees
     setPhaseVoltage(voltage_sensor_align, 0,  _3PI_2);
-    _delay(700);
+    _delay(1200);
     zero_electric_angle = _normalizeAngle(_electricalAngle(sensor_direction*sensor->getAngle(), pole_pairs));
-    _delay(20);
+    _delay(200);
     if(monitor_port){
       monitor_port->print(F("MOT: Zero elec. angle: "));
       monitor_port->println(zero_electric_angle);
@@ -316,10 +316,16 @@ void BLDCMotor::move(float new_target) {
     case MotionControlType::angle:
       // angle set point
       shaft_angle_sp = target;
+
+      // calculate velocity set point
+      current_sp  = P_angle( shaft_angle_sp - shaft_angle );
+
+      /*
       // calculate velocity set point
       shaft_velocity_sp = P_angle( shaft_angle_sp - shaft_angle );
       // calculate the torque command
       current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if voltage torque control
+      */
       // if torque controlled through voltage
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
