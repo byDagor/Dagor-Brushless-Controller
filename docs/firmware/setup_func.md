@@ -13,45 +13,71 @@ Initialization of [SimpleFOC](https://simplefoc.com). Visit the ["Writing the co
 ```c++
 // Do NOT remove the delays in this function.
 void SimpleFOCinit(){
-  delay(500);
+  //Motor driver initialization
 
-  //Initialise magnetic sensor hardware
-  sensor.init();
+  _delay(500);
 
-  //Link the motor to the sensor
-  motor.linkSensor(&sensor);
+  sensor.init();                  // Initialise magnetic sensor hardware
+  motor.linkSensor(&sensor);      // Link sensor to motor instance  
+
 
   // driver config, power supply voltage [V]
   driver.voltage_power_supply = sourceVoltage;
+  driver.voltage_limit = sourceVoltage;
   driver.init();
   motor.linkDriver(&driver);
 
-  // set FOC loop to be used: ControlType::voltage, velocity, angle
-  motor.controller = ControlType::angle;
+  if (focModulation) motor.foc_modulation = FOCModulationType::SinePWM;
+  else motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+
+  // set FOC loop to be used: MotionControlType::torque, velocity, angle, velocity_openloop, angle_openloop
+  if (controlType == "C0") motor.controller = MotionControlType::torque;
+  else if (controlType == "C1") motor.controller = MotionControlType::velocity;
+  else motor.controller = MotionControlType::angle;
+
+  // velocity PI controller parameters
+  motor.PID_velocity.P = vp;
+  motor.PID_velocity.I = vi;
+  motor.PID_velocity.D = vd;
+  motor.PID_velocity.output_ramp = voltageRamp;
+  motor.LPF_velocity.Tf = lpVelFilter;
+
+  // angle P controller
+  motor.P_angle.P = ap;
+  motor.P_angle.I = ai;
+  motor.P_angle.D = ad;
+  // maximal velocity of the poisition control
+  motor.velocity_limit = velocityLimit;
+  motor.LPF_angle.Tf = lpPosFilter;
+
+
+  // Position offset, used to define an absolute 0 position [rads]
+  motor.sensor_offset = sensorOffset;
+
+  // Downsampling value of the motion control loops with respect to torque loops
+  motor.motion_downsample = motionDownSample; // - times (default 0 - disabled)
+
+  //motor.voltage_limit = phaseRes*maxCurrent;
+  // Measured phase resistance [ohms]
+  motor.phase_resistance = phaseRes;
+  motor.current_limit = maxCurrent;
 
   // Sensor aligning voltage
-  motor.voltage_sensor_align = voltageLimit/2;
-
-  // velocity PI controller parameters, default K=0.5 Ti = 0.01
-  motor.PID_velocity.P = ki;
-  motor.PID_velocity.I = ti;
-  motor.PID_velocity.D = 0;
-  motor.voltage_limit = voltageLimit;
-  motor.LPF_velocity.Tf = lpFilter;
-
-  // angle P controller, default K=70
-  motor.P_angle.P = kp;
-  // maximal velocity of the poisition control, default 20
-  motor.velocity_limit = velocityLimit;
+  motor.voltage_sensor_align = (maxCurrent*phaseRes)*alignStrength;
 
   motor.useMonitoring(Serial);      // use monitoring functionality
   motor.init();                     // initialise motor
-  motor.initFOC();                  // align sensor/ encoder and start FOC
-  Serial.print("Electric Angle: ");
-  Serial.println(motor.zero_electric_angle);
-  //motor.initFOC(4.5,CW);
 
-  _delay(1000);
+  if (skipCalibration && natDirection == "CW") motor.initFOC(elecOffset,CW);              // start FOC
+  else if (skipCalibration && natDirection == "CCW") motor.initFOC(elecOffset,CCW);       // start FOC
+  else motor.initFOC();                         // align sensor/ encoder and start FOC
+
+  _delay(500);
+
+  // define the motor id
+  command.add(motorID, onMotor, " BLDC");
+  if (!commandDebug) command.verbose = VerboseMode::nothing;
+
 }
 
 ```
@@ -60,7 +86,7 @@ Configuration of the DRV8305 driver IC. The first thing to do before applying th
 ```c++
 //Configure DRV8305 to desired operation mode
 void drv_init(){
-  delay(250);
+  _delay(250);
   Serial.println("DRIVER: DRV8305 INIT");
 
   //Set to three PWM inputs mode
@@ -68,14 +94,36 @@ void drv_init(){
   byte resp1 = SPI.transfer(B00111010);
   byte resp2 = SPI.transfer(B10000110);
   digitalWrite(cs, HIGH);
-  //010 10010110
-  //010 00000110
-  Serial.println(resp1, BIN);
-  Serial.println(resp2, BIN);
 
-  delay(500);
+  _delay(500);
+
   Serial.println("DRIVER: enGate Enabled");
   digitalWrite(enGate, HIGH);
 }
 
+```
+
+Initialise SPI and GPIOs
+
+```c++
+void spi_init(){
+  //SPI start up
+  pinMode(cs, OUTPUT);
+  digitalWrite(cs, HIGH);
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE1);
+}
+
+void gpio_init(){
+  //Pinmodes assignment
+  pinMode(15,OUTPUT);
+  digitalWrite(15,HIGH);
+  pinMode(so1, INPUT);
+  pinMode(so2, INPUT);
+  pinMode(so3, INPUT);
+  pinMode(nFault, INPUT);
+  pinMode(enGate, OUTPUT);
+  digitalWrite(enGate, LOW);
+}
 ```

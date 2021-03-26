@@ -78,7 +78,13 @@ The only thing left to do is test the set-up and tune the controller.
 
 ### 6.1 Connecting everything
 
-Connect the *Dagor controller* to the motor and the USB to TTL module, power the controller and the motor will start position controlling the motor. If the controller is very badly tuned (as is expected) the position control might work very badly and tuning will be needed. Make sure to start with a very modest voltage limit so that the response isn't very bad while tuning the controller's parameters.
+Connect the *Dagor controller* to the motor and the USB to TTL module, power the controller and the motor will start position controlling the motor. On power on the first thing that will happen is that the motor will run a calibration before going into position control mode, make sure you let the calibration run successfully before touching the motor's rotor. The calibration should look like the following: the motor moves a few degrees in a direction and a few degrees back in the other direction; if there is no movement the current limit or the phase resistance is set too low, one of the two should be increased and upload the firmware again, if the red LED turns on the current limit or the phase resistance is set too high, one of the two should be decreased and upload the firmware again.
+
+A successful calibration will look something like this:
+
+![serial_monitor](Images/serial_monitor.png)
+
+If the controller is very badly tuned (as is expected) the position control might work very badly and tuning will be needed. Make sure to start with a very modest voltage limit so that the response isn't very bad while tuning the controller's parameters.
 
 ### 6.2 Tuning the controller
 

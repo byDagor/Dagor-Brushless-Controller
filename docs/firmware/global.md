@@ -57,7 +57,7 @@ Another of the ESP32's ADC channels from the ADC1 module used to read the voltag
 Time management variables. If needed, add here a variable named something like *"stateT2"* to add another fixed rate function caller.
 ```c++
 //#####_TIME MANAGEMENT_#####
-float runTime, prevT = 0, timeDif, stateT;
+unsigned long runTime, prevT = 0, timeDif, stateT;
 int timeInterval = 1000, totalTempTime;
 ```
 
@@ -68,6 +68,10 @@ SimpleFOC motor, driver and sensor instances. Even though the on-board sensor ha
 BLDCMotor motor = BLDCMotor(pp);   //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27);     //3PWM Driver instance
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);       //SPI Magnetic sensor instance
+
+//####_COMMANDER INTERFACE_####
+Commander command = Commander(Serial);
+void onMotor(char* cmd){ command.motor(&motor, cmd); }
 ```
 
 Declaration of functions that are used on the void setup, if a new function is added it has to be declared here, called on the void setup function (tab c) and added in the Setup functions tab (tab e).
@@ -75,7 +79,6 @@ Declaration of functions that are used on the void setup, if a new function is a
 ```c++
 //######_SETUP FUNCTIONS INIT_######
 void SimpleFOCinit();
-static void IRAM_ATTR isr_handler(void*);
 void drv_init();
 ```
 
@@ -88,5 +91,4 @@ void tempStatus(bool debug = false);
 void voltageMonitor(bool debug = false);
 void rotorPosition();
 void faultStatus();
-String serialReceiveUserCommand();
 ```

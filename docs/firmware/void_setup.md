@@ -10,31 +10,18 @@ permalink: /void_setup
 
 ```c++
 void setup() {
-  Serial.begin(115200);
+    Serial.begin(115200);
 
-  analogSetCycles(2);
+    Serial.println("DAGOR: INIT");
 
-  //Pinmodes assignment
-  pinMode(15,OUTPUT);
-  digitalWrite(15,HIGH);
-  pinMode(so1, INPUT);
-  pinMode(so2, INPUT);
-  pinMode(so3, INPUT);
-  pinMode(nFault, INPUT);
-  pinMode(enGate, OUTPUT);
-  digitalWrite(enGate, LOW);
+    gpio_init();
+    spi_init();
 
-  //SPI start up
-  pinMode(cs, OUTPUT);
-  digitalWrite(cs, HIGH);
-  SPI.begin();
-  SPI.setBitOrder(MSBFIRST);
-  SPI.setDataMode(SPI_MODE1);
+    _delay(250);
+    drv_init();
 
-  drv_init();
+    SimpleFOCinit();
 
-  SimpleFOCinit();
-
-  Serial.println("DAGOR: Ready BLDC.");
+    Serial.println("DAGOR: Ready BLDC.");
 }
 ```

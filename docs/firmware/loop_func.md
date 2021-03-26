@@ -115,26 +115,4 @@ void faultStatus(){
   }
 }
 
-// Utility function enabling serial communication
-String serialReceiveUserCommand() {
-  // a string to hold incoming data
-  static String received_chars;
-  String command = "";
-
-  while (Serial.available()) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the string buffer:
-    received_chars += inChar;
-    // end of user input
-    if (inChar == '\n') {
-      // execute the user command
-      command = received_chars;
-      // reset the command buffer
-      received_chars = "";
-    }
-  }
-  return command;
-}
-
 ```
