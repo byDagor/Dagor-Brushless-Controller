@@ -17,7 +17,7 @@ StepperDriver	KEYWORD1
 PIDController	KEYWORD1
 LowPassFilter	KEYWORD1
 InlineCurrentSense	KEYWORD1
-LowsideCurrentSense	KEYWORD1  
+LowsideCurrentSense	KEYWORD1
 CurrentSense	KEYWORD1
 Commander	KEYWORD1
 StepDirListener	KEYWORD1
@@ -46,6 +46,9 @@ PID_current_d	KEYWORD2
 LPF_velocity	KEYWORD2
 LPF_current_q	KEYWORD2
 LPF_current_d	KEYWORD2
+LPF_current_a	KEYWORD2
+LPF_current_b	KEYWORD2
+LPF_current_c	KEYWORD2
 P_angle	KEYWORD2
 LPF_angle	KEYWORD2
 

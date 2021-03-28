@@ -21,16 +21,25 @@ void SimpleFOCinit(){
   motor.linkDriver(&driver);
 
   Serial.println("DAGOR: Init current sense");
+  current_dc_calib(true);
   // current sense init hardware
   current_sense.init();
   current_sense.driverSync(&driver);
+  current_dc_calib(false);
   
   // link the current sense to the motor
-  motor.linkCurrentSense(&current_sense);
-  motor.torque_controller = TorqueControlType::foc_current; 
+  if (trueTorque){
+    motor.linkCurrentSense(&current_sense);
+    motor.torque_controller = TorqueControlType::foc_current; 
+  }
+  else{
+    motor.torque_controller = TorqueControlType::voltage; 
 
-  //motor.torque_controller = TorqueControlType::voltage; 
-  
+    motor.voltage_limit = phaseRes*maxPowersourceCurrent; 
+    // Measured phase resistance [ohms]
+    //motor.phase_resistance = phaseRes;
+    //motor.current_limit = maxPowersourceCurrent;
+  }
 
   if (focModulation) motor.foc_modulation = FOCModulationType::SinePWM;
   else motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
@@ -40,10 +49,6 @@ void SimpleFOCinit(){
   else if (controlType == "C1") motor.controller = MotionControlType::velocity;
   else motor.controller = MotionControlType::angle;
 
-  //motor.voltage_limit = phaseRes*maxCurrent; 
-  // Measured phase resistance [ohms]
-  //motor.phase_resistance = phaseRes;
-  //motor.current_limit = maxCurrent; 
 
   // Sensor aligning voltage
   motor.voltage_sensor_align = (1.25*phaseRes)*alignStrength;
@@ -53,15 +58,15 @@ void SimpleFOCinit(){
   motor.PID_current_q.I = ci;
   motor.PID_current_q.D = cd;
   motor.PID_current_q.limit = phaseRes*maxPowersourceCurrent;
-  motor.PID_current_q.output_ramp = 30;
-  motor.LPF_current_q.Tf = 0.001;
+  motor.PID_current_q.output_ramp = 100;
+  motor.LPF_current_q.Tf = 0.000;
 
   motor.PID_current_d.P = cp;
   motor.PID_current_d.I = ci;
   motor.PID_current_d.D = cd;
   motor.PID_current_d.limit = phaseRes*maxPowersourceCurrent;
-  motor.PID_current_d.output_ramp = 30;
-  motor.LPF_current_d.Tf = 0.001;
+  motor.PID_current_d.output_ramp = 100;
+  motor.LPF_current_d.Tf = 0.000;
  
   // velocity PI controller parameters
   motor.PID_velocity.P = vp;
@@ -112,28 +117,61 @@ void drv_init(){
   //Set to three PWM inputs mode
   digitalWrite(cs, LOW);
   byte resp1 = SPI.transfer(B00111010);
-  byte resp2 = SPI.transfer(B10000110);
+  byte resp2 = SPI.transfer(B10010110);
   digitalWrite(cs, HIGH);
   //Serial.println(resp1, BIN);
   //Serial.println(resp2, BIN);
-  
-  _delay(500);
 
+  //Clamp sense amplifier output to 3.3V
   digitalWrite(cs, LOW);
-  int resp3 = SPI.transfer(B01010111);
-  int resp4 = SPI.transfer(B00000000);
+  byte resp3 = SPI.transfer(B01001100);
+  byte resp4 = SPI.transfer(B10100000);
   digitalWrite(cs, HIGH);
-  //Serial.println(resp3);
-  //Serial.println(resp4);
-
-  digitalWrite(cs, LOW);
-  int resp5 = SPI.transfer(B01010000);
-  int resp6 = SPI.transfer(B00000000);
-  digitalWrite(cs, HIGH);
-  //Serial.println(resp5);
-  //Serial.println(resp6);
+  //Serial.println(resp1, BIN);
+  //Serial.println(resp2, BIN);
 
   Serial.println("DRIVER: enGate Enabled");
   digitalWrite(enGate, HIGH);
+  _delay(500);
   
+}
+
+void current_dc_calib(bool activate){
+  if (activate){
+    digitalWrite(cs, LOW);
+    byte resp5 = SPI.transfer(B01010111);
+    byte resp6 = SPI.transfer(B00000000);
+    digitalWrite(cs, HIGH);
+    Serial.println(resp5, BIN);
+    Serial.println(resp6, BIN);
+  }
+  else if (!activate){
+    digitalWrite(cs, LOW);
+    byte resp7 = SPI.transfer(B01010000);
+    byte resp8 = SPI.transfer(B00010101);
+    digitalWrite(cs, HIGH);
+    Serial.println(resp7, BIN);
+    Serial.println(resp8, BIN);
+  }
+}
+
+void spi_init(){
+  //SPI start up
+  pinMode(cs, OUTPUT);
+  digitalWrite(cs, HIGH);
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE1);
+}
+
+void gpio_init(){
+  //Pinmodes assignment
+  pinMode(15,OUTPUT);
+  digitalWrite(15,HIGH);
+  pinMode(so1, INPUT);
+  pinMode(so2, INPUT);
+  pinMode(so3, INPUT);
+  pinMode(nFault, INPUT);
+  pinMode(enGate, OUTPUT);
+  digitalWrite(enGate, LOW);
 }

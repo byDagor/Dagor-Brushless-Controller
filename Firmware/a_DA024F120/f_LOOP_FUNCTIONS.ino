@@ -25,8 +25,8 @@ void tempStatus(bool debug){
   }
   
   if (temp >= maxTemp && tFlag == false){
-    unsigned long tempTime = micros();
-    totalTempTime += tempTime;
+    //unsigned long tempTime = micros();
+    totalTempTime += timeDif;
 
     //If temperature is high for [overTempTime] seconds disable controller
     if(totalTempTime >= overTempTime*1000000){

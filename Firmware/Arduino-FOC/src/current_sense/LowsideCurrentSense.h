@@ -5,6 +5,7 @@
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
 #include "../common/base_classes/CurrentSense.h"
+#include "../common/base_classes/FOCMotor.h"
 #include "hardware_api.h"
 
 

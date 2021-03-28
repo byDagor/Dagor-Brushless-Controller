@@ -38,8 +38,7 @@ int timeInterval = 1000, totalTempTime;
 BLDCMotor motor = BLDCMotor(pp);                                                      //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(25, 26, 27);                                   //3PWM Driver instance
 MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);                   //SPI Magnetic sensor instance
-LowsideCurrentSense current_sense = LowsideCurrentSense(0.002, 10.0, so1, so2);  //Current sensing instance
-
+LowsideCurrentSense current_sense = LowsideCurrentSense(0.002, 20.0, so1, so2);  //Current sensing instance
 
 //####_COMMANDER INTERFACE_####
 Commander command = Commander(Serial);
@@ -48,6 +47,9 @@ void onMotor(char* cmd){ command.motor(&motor, cmd); }
 //######_SETUP FUNCTIONS INIT_######
 void SimpleFOCinit();
 void drv_init();
+void spi_init();
+void gpio_init();
+void current_dc_calib(bool activate);
 
 //######_LOOP FUNCTIONS INIT_######
 void timeManagement();

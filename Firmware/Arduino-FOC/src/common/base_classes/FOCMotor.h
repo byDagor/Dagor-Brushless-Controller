@@ -70,15 +70,15 @@ class FOCMotor
     virtual void enable()=0;
 
     /**
-     * Function linking a motor and a sensor 
-     * 
+     * Function linking a motor and a sensor
+     *
      * @param sensor Sensor class  wrapper for the FOC algorihtm to read the motor angle and velocity
      */
     void linkSensor(Sensor* sensor);
 
     /**
-     * Function linking a motor and current sensing 
-     * 
+     * Function linking a motor and current sensing
+     *
      * @param current_sense CurrentSense class wrapper for the FOC algorihtm to read the motor current measurements
      */
     void linkCurrentSense(CurrentSense* current_sense);
@@ -86,44 +86,44 @@ class FOCMotor
 
     /**
      * Function initializing FOC algorithm
-     * and aligning sensor's and motors' zero position 
-     * 
+     * and aligning sensor's and motors' zero position
+     *
      * - If zero_electric_offset parameter is set the alignment procedure is skipped
-     * 
+     *
      * @param zero_electric_offset value of the sensors absolute position electrical offset in respect to motor's electrical 0 position.
      * @param sensor_direction  sensor natural direction - default is CW
      *
-     */  
-    virtual int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW)=0; 
+     */
+    virtual int initFOC( float zero_electric_offset = NOT_SET , Direction sensor_direction = Direction::CW)=0;
     /**
      * Function running FOC algorithm in real-time
-     * it calculates the gets motor angle and sets the appropriate voltages 
+     * it calculates the gets motor angle and sets the appropriate voltages
      * to the phase pwm signals
      * - the faster you can run it the better Arduino UNO ~1ms, Bluepill ~ 100us
-     */ 
+     */
     virtual void loopFOC()=0;
     /**
      * Function executing the control loops set by the controller parameter of the BLDCMotor.
-     * 
+     *
      * @param target  Either voltage, angle or velocity based on the motor.controller
      *                If it is not set the motor will use the target set in its variable motor.target
-     * 
+     *
      * This function doesn't need to be run upon each loop execution - depends of the use case
      */
     virtual void move(float target = NOT_SET)=0;
 
-    // State calculation methods 
+    // State calculation methods
     /** Shaft angle calculation in radians [rad] */
     float shaftAngle();
-    /** 
+    /**
      * Shaft angle calculation function in radian per second [rad/s]
      * It implements low pass filtering
      */
     float shaftVelocity();
 
 
-    /** 
-     * Electrical angle calculation  
+    /**
+     * Electrical angle calculation
      */
     float electricalAngle();
 
@@ -131,7 +131,7 @@ class FOCMotor
     float target; //!< current target value - depends of the controller
   	float shaft_angle;//!< current motor angle
   	float electrical_angle;//!< current electrical angle
-  	float shaft_velocity;//!< current motor velocity 
+  	float shaft_velocity;//!< current motor velocity
     float current_sp;//!< target current ( q current )
     float shaft_velocity_sp;//!< current target velocity
     float shaft_angle_sp;//!< current target angle
@@ -140,8 +140,8 @@ class FOCMotor
 
     // motor configuration parameters
     float voltage_sensor_align;//!< sensor and motor align voltage parameter
-    float velocity_index_search;//!< target velocity for index search 
-    
+    float velocity_index_search;//!< target velocity for index search
+
     // motor physical parameters
     float	phase_resistance; //!< motor phase resistance
     int pole_pairs;//!< motor pole pairs number
@@ -153,7 +153,7 @@ class FOCMotor
 
     // motor status vairables
     int8_t enabled = 0;//!< enabled or disabled motor flag
-    
+
     // pwm modulation related variables
     FOCModulationType foc_modulation;//!<  parameter derterniming modulation algorithm
     int8_t modulation_centered = 1;//!< flag (1) centered modulation around driver limit /2  or  (0) pulled to 0
@@ -166,12 +166,12 @@ class FOCMotor
     // controllers and low pass filters
     PIDController PID_current_q{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the q current PID config
     PIDController PID_current_d{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the d current PID config
-    LowPassFilter LPF_current_q{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
-    LowPassFilter LPF_current_d{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
+    LowPassFilter LPF_current_q{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration
+    LowPassFilter LPF_current_d{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration
     PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
-    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
-    LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
-    LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration 
+    PIDController P_angle{DEF_P_ANGLE_P,0,0,1e10,DEF_VEL_LIM};	//!< parameter determining the position PID configuration
+    LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration
+    LowPassFilter LPF_angle{0.0};//!<  parameter determining the angle low pass filter configuration
     unsigned int motion_downsample = DEF_MOTION_DOWNSMAPLE; //!< parameter defining the ratio of downsampling for move commad
     unsigned int motion_cnt = 0; //!< counting variable for downsampling for move commad
 
@@ -181,9 +181,9 @@ class FOCMotor
     int sensor_direction = NOT_SET; //!< if sensor_direction == Direction::CCW then direction will be flipped to CW
 
     /**
-     * Function providing BLDCMotor class with the 
+     * Function providing BLDCMotor class with the
      * Serial interface and enabling monitoring mode
-     * 
+     *
      * @param serial Monitoring Serial class reference
      */
     void useMonitoring(Print &serial);
@@ -193,21 +193,21 @@ class FOCMotor
      * significantly slowing the execution down!!!!
      */
     void monitor();
-    unsigned int monitor_downsample = DEF_MON_DOWNSMAPLE; //!< show monitor outputs each monitor_downsample calls 
+    unsigned int monitor_downsample = DEF_MON_DOWNSMAPLE; //!< show monitor outputs each monitor_downsample calls
     // initial monitoring will display target, voltage, velocity and angle
     uint8_t monitor_variables = _MON_TARGET | _MON_VOLT_Q | _MON_VEL | _MON_ANGLE; //!< Bit array holding the map of variables the user wants to monitor
-   
-    /** 
+
+    /**
       * Sensor link:
-      * - Encoder 
+      * - Encoder
       * - MagneticSensor*
       * - HallSensor
     */
-    Sensor* sensor; 
-    /** 
+    Sensor* sensor;
+    /**
       * CurrentSense link
     */
-    CurrentSense* current_sense; 
+    CurrentSense* current_sense;
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided

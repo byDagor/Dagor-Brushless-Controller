@@ -3,6 +3,7 @@
 
 #include "../common/foc_utils.h"
 #include "../common/time_utils.h"
+#include "../common/base_classes/FOCMotor.h"
 
 /**
  *  function reading an ADC value and returning the read voltage
