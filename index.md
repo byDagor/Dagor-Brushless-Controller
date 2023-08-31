@@ -27,10 +27,11 @@ The *Dagor Brushless Controller* was designed as a simple platform for hobbyist 
 
 | Specification    | Rating          |
 | ------------- |-------------|
-| Dimensions      | 44 x 44mm |
+| Dimensions      | 44 x 44 x 6 mm |
 | Mass    | 12g |
-| Power source voltage      | 5-24V |
-| Peak current   | up to 40A |
+| Power source voltage      | 5 - 24V |
+| Continuous phase current   | 7A |
+| Peak phase current   | up to 60A |
 | Magnetic sensor resolution | 14 bits |
 | Temperature sensor range | -10 ~ 120°C |
 
