@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Power stage
+title: Driver
 parent: Hardware
 nav_order: 2
 permalink: /power_stage

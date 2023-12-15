@@ -15,5 +15,6 @@ For general questions please post in the [community forum](https://community.sim
 Have anything you want to ask me or tell me directly?
 
 - david@simplefoc.com
+- [Dagor Developments](https://www.dagor.dev/)
 - [Youtube](https://www.youtube.com/c/DavidGonzalezR/)
-- [Linkedin](https://www.linkedin.com/in/david-g-reyes/)
+- [LinkedIn](https://www.linkedin.com/in/david-g-reyes/)

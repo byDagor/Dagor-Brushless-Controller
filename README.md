@@ -4,5 +4,6 @@
 
 ## Contact
 - davidglzrys@gmail.com  
-- [Linkedin](https://www.linkedin.com/in/david-g-reyes/)  
+- [Dagor Developments](https://www.dagor.dev/)
+- [LinkedIn](https://www.linkedin.com/in/david-g-reyes/)  
 - [Youtube](https://www.youtube.com/c/DavidGonzalezR/)
