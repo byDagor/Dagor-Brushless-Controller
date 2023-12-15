@@ -12,7 +12,7 @@ The board's power output can be dramatically increased by either active cooling,
 
 If designing a heat sink, the picture below shows the key components that require to be in contact with the sink, these components are the six power MOSFETs and the DRV8305 MOSFET driver. For active cooling, using a small fan to provide an airflow to these key components can greatly help. Combining both solutions will provide the maximum amount of cooling and thus the maximum amount of output power possible.
 
-![heat_sink_components](Images/heat_sink_components.png)
+![heat_sink_components](Images/heat_sink_components.PNG)
 
 |         NOTE          |
 |:---------------------------|
