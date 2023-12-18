@@ -8,20 +8,23 @@ HallSensors	KEYWORD1
 MagneticSensorSPI	KEYWORD1
 MagneticSensorI2C	KEYWORD1
 MagneticSensorAnalog	KEYWORD1
-BLDCDriver3PWM	KEYWORD1
-BLDCDriver6PWM	KEYWORD1
-BLDCDriver	KEYWORD1
-StepperDriver4PWM	KEYWORD1
-StepperDriver2PWM	KEYWORD1
-StepperDriver	KEYWORD1
-PIDController	KEYWORD1
-LowPassFilter	KEYWORD1
-InlineCurrentSense	KEYWORD1
-LowsideCurrentSense	KEYWORD1
-CurrentSense	KEYWORD1
-Commander	KEYWORD1
-StepDirListener	KEYWORD1
-
+MagneticSensorPWM	KEYWORD1
+BLDCDriver3PWM	KEYWORD1    
+BLDCDriver6PWM	KEYWORD1    
+BLDCDriver	KEYWORD1    
+StepperDriver4PWM	KEYWORD1    
+StepperDriver2PWM	KEYWORD1    
+StepperDriver	KEYWORD1   
+PIDController	KEYWORD1    
+LowPassFilter	KEYWORD1   
+InlineCurrentSense	KEYWORD1   
+LowsideCurrentSense	KEYWORD1   
+CurrentSense	KEYWORD1   
+Commander	KEYWORD1   
+StepDirListener	KEYWORD1   
+GenericCurrentSense	KEYWORD1   
+GenericSensor	KEYWORD1   
+SimpleFOCDebug	KEYWORD1   
 
 initFOC	KEYWORD2
 loopFOC	KEYWORD2
@@ -46,11 +49,11 @@ PID_current_d	KEYWORD2
 LPF_velocity	KEYWORD2
 LPF_current_q	KEYWORD2
 LPF_current_d	KEYWORD2
-LPF_current_a	KEYWORD2
-LPF_current_b	KEYWORD2
-LPF_current_c	KEYWORD2
 P_angle	KEYWORD2
 LPF_angle	KEYWORD2
+lpf_a	KEYWORD2
+lpf_b	KEYWORD2
+lpf_c	KEYWORD2
 
 MotionControlType	KEYWORD1
 TorqueControlType	KEYWORD1
@@ -76,6 +79,9 @@ ISR	KEYWORD2
 getVelocity	KEYWORD2
 setPhaseVoltage	KEYWORD2
 getAngle	KEYWORD2
+getMechanicalAngle	KEYWORD2
+getSensorAngle	KEYWORD2
+update	KEYWORD2
 needsSearch	KEYWORD2
 useMonitoring	KEYWORD2
 angleOpenloop	KEYWORD2
@@ -85,7 +91,7 @@ getFOCCurrents	KEYWORD2
 getDCCurrent	KEYWORD2
 setPwm	KEYWORD2
 driverAlign	KEYWORD2
-driverSync	KEYWORD2
+linkDriver	KEYWORD2
 add	KEYWORD2
 run	KEYWORD2
 attach	KEYWORD2
@@ -96,6 +102,10 @@ scalar	KEYWORD2
 pid	KEYWORD2
 lpf	KEYWORD2
 motor	KEYWORD2
+handlePWM	KEYWORD2
+enableInterrupt	KEYWORD2
+readCallback	KEYWORD2
+initCallback	KEYWORD2
 
 
 
@@ -112,6 +122,7 @@ pullup	KEYWORD2
 quadrature	KEYWORD2
 foc_modulation	KEYWORD2
 target	KEYWORD2
+motion	KEYWORD2
 pwm_frequency	KEYWORD2
 dead_zone	KEYWORD2
 gain_a	KEYWORD2
@@ -123,6 +134,8 @@ sensor_offset	KEYWORD2
 zero_electric_angle	KEYWORD2
 verbose	KEYWORD2
 decimal_places	KEYWORD2
+phase_resistance	KEYWORD2
+modulation_centered	KEYWORD2
 
 
 
@@ -163,8 +176,8 @@ pinB	KEYWORD2
 pinC	KEYWORD2
 index_pin	KEYWORD2
 
-INTERN	KEYWORD2
-EXTERN	KEYWORD2
+USE_INTERN	KEYWORD2
+USE_EXTERN	KEYWORD2
 DISABLE	KEYWORD2
 ENABLE	KEYWORD2
 SpaceVectorPWM	KEYWORD2
@@ -222,6 +235,7 @@ _PI_3	LITERAL1
 _SQRT3	LITERAL1
 _PI	LITERAL1
 _HIGH_Z	LITERAL1
+_NC	LITERAL1
 
 _MON_TARGET	LITERAL1
 _MON_VOLT_Q	LITERAL1

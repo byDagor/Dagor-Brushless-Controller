@@ -12,17 +12,19 @@ void doA(){encoder.handleA();}
 void doB(){encoder.handleB();}
 
 // inline current sensor instance
+// check if your board has R010 (0.01 ohm resistor) or R006 (0.006 mOhm resistor)
 InlineCurrentSense current_sense = InlineCurrentSense(0.01, 50.0, A0, A2);
 
 // commander communication instance
 Commander command = Commander(Serial);
-void doMotor(char* cmd){ command.motor(&motor, cmd); }
+void doMotion(char* cmd){ command.motion(&motor, cmd); }
+// void doMotor(char* cmd){ command.motor(&motor, cmd); }
 
 void setup() {
 
   // initialize encoder sensor hardware
   encoder.init();
-  encoder.enableInterrupts(doA, doB); 
+  encoder.enableInterrupts(doA, doB);
   // link the motor to the sensor
   motor.linkSensor(&encoder);
 
@@ -32,19 +34,21 @@ void setup() {
   driver.init();
   // link driver
   motor.linkDriver(&driver);
+  // link current sense and the driver
+  current_sense.linkDriver(&driver);
 
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
 
-  // contoller configuration based on the controll type 
-  motor.PID_velocity.P = 0.05;
+  // contoller configuration based on the controll type
+  motor.PID_velocity.P = 0.05f;
   motor.PID_velocity.I = 1;
   motor.PID_velocity.D = 0;
   // default voltage_power_supply
   motor.voltage_limit = 12;
-  
+
   // velocity low pass filtering time constant
-  motor.LPF_velocity.Tf = 0.01;
+  motor.LPF_velocity.Tf = 0.01f;
 
   // angle loop controller
   motor.P_angle.P = 20;
@@ -58,7 +62,7 @@ void setup() {
   motor.useMonitoring(Serial);
   motor.monitor_downsample = 0; // disable intially
   motor.monitor_variables = _MON_TARGET | _MON_VEL | _MON_ANGLE; // monitor target velocity and angle
-  
+
   // current sense init and linking
   current_sense.init();
   motor.linkCurrentSense(&current_sense);
@@ -66,17 +70,18 @@ void setup() {
   // initialise motor
   motor.init();
   // align encoder and start FOC
-  motor.initFOC(); 
+  motor.initFOC();
 
   // set the inital target value
   motor.target = 2;
 
   // subscribe motor to the commander
-  command.add('M', doMotor, "motor");
-
-  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)  
-  Serial.println(F("Motor commands sketch | Initial motion control > torque/voltage : target 2V."));
+  command.add('T', doMotion, "motion control");
+  // command.add('M', doMotor, "motor");
   
+  // Run user commands to configure and the motor (find the full command list in docs.simplefoc.com)
+  Serial.println("Motor ready.");
+
   _delay(1000);
 }
 

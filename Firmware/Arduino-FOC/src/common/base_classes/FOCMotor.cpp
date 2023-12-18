@@ -1,4 +1,5 @@
 #include "FOCMotor.h"
+#include "../../communication/SimpleFOCDebug.h"
 
 /**
  * Default constructor - setting all variabels to default values
@@ -28,6 +29,9 @@ FOCMotor::FOCMotor()
   current_sp = 0;
   current.q = 0;
   current.d = 0;
+
+  // voltage bemf 
+  voltage_bemf = 0;
   
   //monitor_port 
   monitor_port = nullptr;
@@ -66,7 +70,9 @@ float FOCMotor::shaftVelocity() {
 }
 
 float FOCMotor::electricalAngle(){
-  return _normalizeAngle((shaft_angle + sensor_offset) * pole_pairs - zero_electric_angle);
+  // if no sensor linked return previous value ( for open loop )
+  if(!sensor) return electrical_angle;
+  return  _normalizeAngle( (float)(sensor_direction * pole_pairs) * sensor->getMechanicalAngle()  - zero_electric_angle );
 }
 
 /**
@@ -75,7 +81,8 @@ float FOCMotor::electricalAngle(){
 // function implementing the monitor_port setter
 void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
-  if(monitor_port ) monitor_port->println(F("MOT: Monitor enabled!"));
+  SimpleFOCDebug::enable(&print);
+  SIMPLEFOC_DEBUG("MOT: Monitor enabled!");
 }
 
 // utility function intended to be used with serial plotter to monitor motor variables
@@ -103,18 +110,19 @@ void FOCMotor::monitor() {
   }
   // read currents if possible - even in voltage mode (if current_sense available)
   if(monitor_variables & _MON_CURR_Q || monitor_variables & _MON_CURR_D) {
-    DQCurrent_s c{0,0};
-    if(current_sense){
-      if(torque_controller == TorqueControlType::foc_current) c = current;
-      else c = current_sense->getFOCCurrents(electrical_angle);
+    DQCurrent_s c = current;
+    if( current_sense && torque_controller != TorqueControlType::foc_current ){
+      c = current_sense->getFOCCurrents(electrical_angle);
+      c.q = LPF_current_q(c.q);
+      c.d = LPF_current_d(c.d);
     }
     if(monitor_variables & _MON_CURR_Q) {
-      monitor_port->print(c.q*1000,2); // mAmps
+      monitor_port->print(c.q*1000, 2); // mAmps
       monitor_port->print("\t");
       printed= true;
     }
     if(monitor_variables & _MON_CURR_D) {
-      monitor_port->print(c.d*1000,2); // mAmps
+      monitor_port->print(c.d*1000, 2); // mAmps
       monitor_port->print("\t");
       printed= true;
     }

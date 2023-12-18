@@ -38,6 +38,7 @@ class BLDCDriver3PWM: public BLDCDriver
     int enableA_pin; //!< enable pin number
     int enableB_pin; //!< enable pin number
     int enableC_pin; //!< enable pin number
+    bool enable_active_high = true;
 
     /** 
      * Set phase voltages to the harware 
@@ -57,7 +58,6 @@ class BLDCDriver3PWM: public BLDCDriver
     */
     virtual void setPhaseState(int sa, int sb, int sc) override;
   private:
-        
 };
 
 
