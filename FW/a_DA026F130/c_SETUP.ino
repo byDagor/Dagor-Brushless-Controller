@@ -9,6 +9,8 @@ void setup() {
   Serial.print("DAGOR: ACTUATOR ID -> ");
   Serial.println(ACT_ID);
   
+  float bus_v = busVoltage();
+
   #ifdef ESP_NOW
     Serial.println("DAGOR: ESP-NOW init");
     espNowInit();
@@ -21,7 +23,7 @@ void setup() {
   delay(250);
   drv_init();
 
-  int sfoc = SimpleFOCinit();
+  int sfoc = SimpleFOCinit(bus_v);
 
   if (sfoc){
     state_machine = LIFE_IS_GOOD;

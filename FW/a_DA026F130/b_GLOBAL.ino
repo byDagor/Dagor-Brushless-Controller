@@ -54,7 +54,7 @@ unsigned long stateT = 0;
 //#############_SIMPLEFOC INSTANCES_#################
 BLDCMotor motor = BLDCMotor(pp);                                                  //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
-LowsideCurrentSense current_sense = LowsideCurrentSense(0.002, 80.0, SO1, SO2);   //Current sensing instance
+LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2);   //Current sensing instance
 
 #ifdef ENCODER
   Encoder sensor = Encoder(32, 17, 512);       // Quadrature encoder instance
@@ -75,7 +75,7 @@ void onMotor(char* cmd){ command.motor(&motor, cmd); }
 #endif
 
 //#############_SETUP FUNCTIONS DECLARATION_################
-int SimpleFOCinit();
+int SimpleFOCinit(float bus_v);
 void drv_init();
 void spi_init();
 void gpio_init();
@@ -121,4 +121,26 @@ void phaseVoltages(bool DQspace = false);
   void sendData();
   void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status);
   
+#endif
+
+
+
+#ifdef RS485
+
+  typedef struct input_message {
+      int act_id;
+      char act_commander1;
+      char act_commander2;
+      char act_commander3;
+      float act_target_value;
+  } input_message;
+
+  typedef struct output_message {
+      int act_id;
+      float act_position;
+      float act_velocity;
+      float act_current;
+      float act_commander_value;
+  } output_message;
+
 #endif

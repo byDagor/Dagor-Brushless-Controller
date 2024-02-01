@@ -33,7 +33,7 @@ void loop() {
     
     // Un/ comment the functions bellow that you wish to use.
     faultStatus();          // monitors faults and warnings of the DRV8305
-    //tempStatus(stateT);     // monitors operating temperature, true argument to print temprature
+    tempStatus(stateT);     // monitors operating temperature, true argument to print temprature
     
     
     stateT = 0;

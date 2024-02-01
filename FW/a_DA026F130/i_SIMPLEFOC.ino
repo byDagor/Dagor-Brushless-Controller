@@ -5,7 +5,7 @@
 
 // Initialization of SimpleFOC
 // Do NOT remove the delays in this function.
-int SimpleFOCinit(){
+int SimpleFOCinit(float bus_v){
 
   Serial.println("DAGOR: Init SimpleFOC");
   //Motor driver initialization
@@ -22,28 +22,12 @@ int SimpleFOCinit(){
   #endif
   
   // driver config, power supply voltage [V]
-  driver.voltage_power_supply = sourceVoltage;
-  driver.voltage_limit = sourceVoltage;
-  motor.linkDriver(&driver);
+  driver.voltage_power_supply = bus_v;
+  driver.voltage_limit = bus_v;
   driver.init();
+  motor.linkDriver(&driver);
   current_sense.linkDriver(&driver);
   
-  // link the current sense to the motor
-  if (trueTorque){
-    motor.linkCurrentSense(&current_sense);
-    motor.torque_controller = TorqueControlType::foc_current; 
-    motor.voltage_limit = sourceVoltage; //phaseRes*maxPowersourceCurrent; 
-  }
-  else{
-    motor.torque_controller = TorqueControlType::voltage; 
-    //driver.voltage_limit = sourceVoltage;
-    motor.voltage_limit = sourceVoltage; //phaseRes*maxPowersourceCurrent; 
-    // Measured phase resistance [ohms]
-    //motor.phase_resistance = phaseRes;
-    //motor.current_limit = maxPowersourceCurrent;
-  }
-  
-
   if (focModulation) motor.foc_modulation = FOCModulationType::SinePWM;
   else motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
@@ -52,8 +36,23 @@ int SimpleFOCinit(){
   else if (controlType == "C1") motor.controller = MotionControlType::velocity;
   else motor.controller = MotionControlType::angle;
 
+  // link the current sense to the motor
+  if (trueTorque){
+    motor.linkCurrentSense(&current_sense);
+    motor.torque_controller = TorqueControlType::foc_current; 
+    motor.voltage_limit = bus_v; //phaseRes*maxPowersourceCurrent; 
+  }
+  else{
+    motor.torque_controller = TorqueControlType::voltage; 
+    //driver.voltage_limit = sourceVoltage;
+    motor.voltage_limit = bus_v; //phaseRes*maxPowersourceCurrent; 
+    // Measured phase resistance [ohms]
+    //motor.phase_resistance = phaseRes;
+    //motor.current_limit = maxPowersourceCurrent;
+  }
+
   // Sensor aligning voltage
-  motor.voltage_sensor_align = sourceVoltage*alignStrength; //(maxPowersourceCurrent*phaseRes)*alignStrength;
+  motor.voltage_sensor_align = bus_v*alignStrength; //(maxPowersourceCurrent*phaseRes)*alignStrength;
   Serial.print("MOT: Align voltage -> ");
   Serial.println(motor.voltage_sensor_align);
 
@@ -61,14 +60,14 @@ int SimpleFOCinit(){
   motor.PID_current_q.P = cp;
   motor.PID_current_q.I = ci;
   motor.PID_current_q.D = cd;
-  motor.PID_current_q.limit = sourceVoltage; //phaseRes*maxPowersourceCurrent;
+  motor.PID_current_q.limit = 2.5; //sourceVoltage; //phaseRes*maxPowersourceCurrent;
   motor.PID_current_q.output_ramp = voltageRamp;
   motor.LPF_current_q.Tf = lpQDFilter;
 
   motor.PID_current_d.P = cp;
   motor.PID_current_d.I = ci;
   motor.PID_current_d.D = cd;
-  motor.PID_current_d.limit = sourceVoltage; //phaseRes*maxPowersourceCurrent;
+  motor.PID_current_d.limit = 2.5; //sourceVoltage; //phaseRes*maxPowersourceCurrent;
   motor.PID_current_d.output_ramp = voltageRamp;
   motor.LPF_current_d.Tf = lpQDFilter;
 
@@ -86,7 +85,7 @@ int SimpleFOCinit(){
   motor.P_angle.I = ai;
   motor.P_angle.D = ad;
   // maximal velocity of the poisition control
-  motor.velocity_limit = velocityLimit;
+  motor.velocity_limit = amp_limit;
   motor.LPF_angle.Tf = lpPosFilter;
   
   
@@ -96,11 +95,11 @@ int SimpleFOCinit(){
   // Downsampling value of the motion control loops with respect to torque loops
   motor.motion_downsample = motionDownSample; // - times (default 0 - disabled)
 
-  motor.useMonitoring(Serial);      // use monitoring functionality
-  motor.init();                     // initialise motor
-  
   motor.monitor_variables = _MON_VOLT_Q; 
   motor.monitor_downsample = 50; // downsampling, default 10
+
+  motor.useMonitoring(Serial);      // use monitoring functionality
+  motor.init();                     // initialise motor
 
   Serial.println("DAGOR: Init current sense");
   // current sense init hardware
@@ -112,12 +111,14 @@ int SimpleFOCinit(){
 
   int initFOC_exit_code = 999;
 
-  if (skipCalibration && natDirection == "CW") initFOC_exit_code =  motor.initFOC(elecOffset,CW);              // start FOC skipping sensor calibration
-  else if (skipCalibration && natDirection == "CCW") initFOC_exit_code = motor.initFOC(elecOffset,CCW);        // start FOC skipping sensor calibration
-  else {
-    initFOC_exit_code = motor.initFOC();                                                  // align sensor/ encoder and start FOC
-  }
+  //if (skipCalibration && natDirection == "CW") initFOC_exit_code =  motor.initFOC(elecOffset,CW);              // start FOC skipping sensor calibration
+  //else if (skipCalibration && natDirection == "CCW") initFOC_exit_code = motor.initFOC(elecOffset,CCW);        // start FOC skipping sensor calibration
+  //else {
+  //  initFOC_exit_code = motor.initFOC();                                                  // align sensor/ encoder and start FOC
+  //}
   
+  initFOC_exit_code = motor.initFOC();
+
   if (initFOC_exit_code == 1) {
     _delay(500);
 

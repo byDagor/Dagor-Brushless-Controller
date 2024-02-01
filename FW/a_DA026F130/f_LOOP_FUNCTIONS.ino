@@ -105,8 +105,8 @@ void tempStatus(unsigned long timeDif, bool debug){
 // Monitor the voltage of the power source (useful for battery powered devices).
 void voltageMonitor(bool debug){
   
-  int rawVoltage = analogRead(vMonitor);
-  int bVoltage = rawVoltage * 36.3/4095;
+  float rawVoltage = analogRead(vMonitor);
+  float bVoltage = rawVoltage * 36.3/4095;
 
   if (debug == true){
     Serial.print("Volate: ");

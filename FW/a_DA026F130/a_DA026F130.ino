@@ -15,11 +15,11 @@
 
 //#######_USER VARIABLES_#######
 const byte pp = 7;                                //BLDC motor number of pole pairs
-//const float phaseRes = 0.5;                     //Phase winding resistance [ohms]
+const float phaseRes = 0.25;                     //Phase winding resistance [ohms]
 const float sourceVoltage = 11.1;                   //Voltage of your power source [Volts]
 //const float maxPowersourceCurrent = 5.500;      //Very rough approximation of max current draw from the power source [Amps]
                                                   //This is not the phase current through the motor.
-const float alignStrength = 0.0500;               // Percentage of power used to calibrate the sensor on start-up
+const float alignStrength = 0.10;                 // Percentage of power used to calibrate the sensor on start-up
 const String controlType = "C2";                  //control type: C0 -> torque (voltage)
                                                       // C1 -> velocity
                                                       // C2 -> angular position
@@ -54,7 +54,8 @@ const float ai = 0;                   //Position control loop INTEGRAL gain valu
 const float ad = 0.25;                //Position control loop DERIVATIVE gain value       - AD
 const float lpPosFilter = 0.000;      //Position measurment low-pass filter               - AF
 const float voltageRamp = 5000;       //Change in voltage allowed [Volts per sec]         - VR
-const float velocityLimit = 11;       //Velocity limit [rpm]                              - LV
+const float amp_limit = 2.5;          //Max Q current [amps]                              - LV
+//const float velocity = 2.5;         //Velocity limit [rpm]                              - LV
 
 
 //########_ADVANCED CONFIGURATON_##########
@@ -62,7 +63,7 @@ bool trueTorque = true;               // True torque mode, current control or vo
 bool focModulation = false;           // Field oriented control modulation type: true -> Sine PWM
                                                                              // false -> Space Vector PWM
 const int maxTemp = 80;               // Maximum operating temperature of the power-stage [°C]
-const float overTempTime = 3.5;       // Time in an over-temperature senario to disable the controller [seconds]
+const float overTempTime = 1.5;       // Time in an over-temperature senario to disable the controller [seconds]
 const float sensorOffset = 0.0;       // Position offset, used to define a new absolute 0 position on the motor's rotor [rads]
 const int motionDownSample = 3;       // Downsample the motion control loops with respect to the torque control loop [amount of loops]
 const int callerFixedFreq = 4;        // Frequency of the fixed rate function caller in void loop [hertz]

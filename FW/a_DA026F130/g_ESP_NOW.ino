@@ -41,12 +41,26 @@ void espNowInit(){
 }
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-  //memcpy(&inputData, incomingData, sizeof(inputData));
+  
+  memcpy(&inputData, incomingData, sizeof(inputData));
+  
+  if (inputData.act_id == ACT_ID){
+    if (inputData.act_commander1 == 0 && inputData.act_commander1 == 0){
+      if(inputData.act_commander1 == 77){
+        String espNowInput = "M" + String(inputData.act_target_value,3);    // 3 decimenal places for the float
+        char wirelessCommand[10]; 
+        espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
+        commandEspNow.run(wirelessCommand);
+      }
+    }
+  }
+  
+  
+  /*
   inputData.leg_id = *(int*)incomingData;
 
-  if (inputData.leg_id == ACT_ID){
+  if (inputData.act_id == ACT_ID){
 
-   #ifdef KNEE
     inputData.kneeFunc = String((char*)(incomingData+4));
     inputData.kneeValue = *(float*)(incomingData+16);
     
@@ -70,65 +84,9 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
       char wirelessCommand[10]; 
       espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
       commandEspNow.run(wirelessCommand);
-    }
-  #endif
-
-  #ifdef HIP
-    inputData.hipFunc = String((char*)(incomingData+20));
-    inputData.hipValue = *(float*)(incomingData+32);
-    
-    if (inputData.hipFunc == "home" && gravityCompMode){
-      Serial.print("New Home at: ");
-      Serial.println( sensor.getAngle() );
-      if (motor.sensor_direction == CW) motor.sensor_offset = sensor.getAngle();
-      if (motor.sensor_direction == CCW) motor.sensor_offset = -sensor.getAngle();
-      gravityCompMode = false;
-      commandEspNow.run("M0");
-    }
-    else if(inputData.hipValue == 0){
-      String espNowInput = inputData.hipFunc;
-      //Serial.println(inputData.hipFunc);
-      //Serial.println(espNowInput);
-      char wirelessCommand[10]; 
-      espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
-      commandEspNow.run(wirelessCommand);
-    }
-    else{
-      String espNowInput = "M" + String(inputData.hipValue,3);
-      char wirelessCommand[10]; 
-      espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
-      commandEspNow.run(wirelessCommand);
-    }
-  #endif
-
-  #ifdef SHOULDER
-    inputData.shoulderFunc = String((char*)(incomingData+36));
-    inputData.shoulderValue = *(float*)(incomingData+48);
-    
-    if (inputData.shoulderFunc == "home" && gravityCompMode){
-      Serial.print("New Home at: ");
-      Serial.println( sensor.getAngle() );
-      if (motor.sensor_direction == CW) motor.sensor_offset = sensor.getAngle();
-      if (motor.sensor_direction == CCW) motor.sensor_offset = -sensor.getAngle();
-      gravityCompMode = false;
-      commandEspNow.run("M0");
-    }
-    else if(inputData.shoulderValue == 0){
-      String espNowInput = inputData.shoulderFunc;
-      char wirelessCommand[10]; 
-      espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
-      commandEspNow.run(wirelessCommand);
-    }
-    else{
-      String espNowInput = "M" + String(inputData.shoulderValue,3);
-      char wirelessCommand[10]; 
-      espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
-      commandEspNow.run(wirelessCommand);
-    }
-  #endif
-    
+    }  
   }
-  
+  */
 }
 
 void sendData(){
