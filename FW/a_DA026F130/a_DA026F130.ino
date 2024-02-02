@@ -5,7 +5,7 @@
 // The firmware is separated into 7 tabs (a - g), make sure all files are stored in the folder with the same name as tab a_DAXXXFXXX.
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
-#define ACT_ID 0        // Actuator ID
+#define ACT_ID 100        // Actuator ID
 
 // Below are the variables dependent on the user's set-up. 
 
@@ -62,14 +62,14 @@ const float amp_limit = 2.5;          //Max Q current [amps]                    
 bool trueTorque = true;               // True torque mode, current control or voltage control mode.
 bool focModulation = false;           // Field oriented control modulation type: true -> Sine PWM
                                                                              // false -> Space Vector PWM
-const int maxTemp = 80;               // Maximum operating temperature of the power-stage [°C]
-const float overTempTime = 1.5;       // Time in an over-temperature senario to disable the controller [seconds]
+const int maxTemp = 75;               // Maximum operating temperature of the power-stage [°C]
+const float overTempTime = 1.0;       // Time in an over-temperature senario to disable the controller [seconds]
 const float sensorOffset = 0.0;       // Position offset, used to define a new absolute 0 position on the motor's rotor [rads]
 const int motionDownSample = 3;       // Downsample the motion control loops with respect to the torque control loop [amount of loops]
 const int callerFixedFreq = 4;        // Frequency of the fixed rate function caller in void loop [hertz]
 char motorID = 'M';                   // Motor ID used for the commander interface, can be any character 
                                       // (a unique ID is useful for multi-board proyects)
-bool commandDebug = true;            // Enable/ disable commander serial print for commander 
+bool commandDebug = false;            // Enable/ disable commander serial print for commander 
 bool skipCalibration = false;         // Skip the calibration on start-up
                                       // electric angle offset and natural direction printed on start-up
 const float elecOffset = 0.00;        // Printed as: "MOT: Zero elec. angle: X.XX"
@@ -79,8 +79,9 @@ String natDirection = "CW";           // Can be either CW or CCW
                                       // undef  -> SPI interface (absolute rotational position)
 
 //#######_ESP-NOW_###########
-#define ESP_NOW                                                               // define -> enable ESP_NOW
+#undef ESP_NOW                                                               // define -> enable ESP_NOW
 const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};      // Set address to eanble ESP-NOW broadcast, sending packets over broadcast disables ACK, very important for high bandwidth.
+#define RS485
 
 //#######_ACTIVE COMPLIANCE_#########
 bool gravityCompMode = false;         //enable compliance mode at start-up

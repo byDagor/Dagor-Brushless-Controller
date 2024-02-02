@@ -51,28 +51,7 @@ enum Dagor_state {
 //#############_TIME MANAGEMENT_#####################
 unsigned long stateT = 0;
 
-//#############_SIMPLEFOC INSTANCES_#################
-BLDCMotor motor = BLDCMotor(pp);                                                  //BLDCMotor instance
-BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
-LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2);   //Current sensing instance
 
-#ifdef ENCODER
-  Encoder sensor = Encoder(32, 17, 512);       // Quadrature encoder instance
-  // Interrupt routine intialisation -> channel A and B callbacks
-  void doA(){sensor.handleA();}
-  void doB(){sensor.handleB();}
-#else
-  MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);     //SPI Magnetic sensor instance
-#endif
-
-//#############_COMMANDER INTERFACE_#################
-Commander command = Commander(Serial);
-void onMotor(char* cmd){ command.motor(&motor, cmd); }
-
-#ifdef ESP_NOW
-  Commander commandEspNow = Commander();
-  void onMotorEspNow(char* cmd){ commandEspNow.motor(&motor, cmd); }
-#endif
 
 //#############_SETUP FUNCTIONS DECLARATION_################
 int SimpleFOCinit(float bus_v);
@@ -96,20 +75,19 @@ void phaseVoltages(bool DQspace = false);
 #ifdef ESP_NOW
   
   typedef struct input_message {
-      int leg_id;
-      String kneeFunc;
-      float kneeValue;
-      String hipFunc;
-      float hipValue;
-      String shoulderFunc;
-      float shoulderValue;
+      int act_id;
+      char act_commander1;
+      char act_commander2;
+      char act_commander3;
+      float act_target_value;
   } input_message;
 
   typedef struct output_message {
-      int leg_id;
-      float actPosition;
-      float actVelocity;
-      float actQCurrent;
+      int act_id;
+      float act_position;
+      float act_velocity;
+      float act_current;
+      float act_commander_value;
   } output_message;
   
   input_message inputData;
@@ -127,7 +105,15 @@ void phaseVoltages(bool DQspace = false);
 
 #ifdef RS485
 
-  typedef struct input_message {
+  #define COMMS_DIR 12
+  #define UART_RX 22
+  #define UART_TX 21
+
+  #include "SerialTransfer.h"
+
+  SerialTransfer myTransfer;
+
+  struct __attribute__((packed)) input_message {
       int act_id;
       char act_commander1;
       char act_commander2;
@@ -135,12 +121,16 @@ void phaseVoltages(bool DQspace = false);
       float act_target_value;
   } input_message;
 
-  typedef struct output_message {
+  struct __attribute__((packed)) output_message {
       int act_id;
+      char act_state;
       float act_position;
       float act_velocity;
       float act_current;
       float act_commander_value;
   } output_message;
+
+  //input_message inputData;
+  //output_message outputData;
 
 #endif
