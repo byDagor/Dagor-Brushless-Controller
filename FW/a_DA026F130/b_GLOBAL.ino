@@ -7,6 +7,8 @@
 //SimpleFOC Version 2.1
 #include <SimpleFOC.h>
 #include <SPI.h>
+//#include <SimpleFOCDrivers.h>
+//#include <encoders/calibrated/CalibratedSensor.h>
 
 #ifdef ESP_NOW
   #include <esp_now.h>
@@ -56,6 +58,7 @@ unsigned long stateT = 0;
 //#############_SETUP FUNCTIONS DECLARATION_################
 int SimpleFOCinit(float bus_v);
 void drv_init();
+void drv_deinit();
 void spi_init();
 void gpio_init();
 void current_dc_calib(bool activate);

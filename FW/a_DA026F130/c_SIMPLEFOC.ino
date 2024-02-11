@@ -5,7 +5,7 @@
 //#############_SIMPLEFOC INSTANCES_#################
 BLDCMotor motor = BLDCMotor(pp);                                                  //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
-LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2);   //Current sensing instance
+LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2);   //Current sensing instance
 
 #ifdef ENCODER
   Encoder sensor = Encoder(32, 17, 512);       // Quadrature encoder instance
@@ -15,6 +15,9 @@ LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2)
 #else
   MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);     //SPI Magnetic sensor instance
 #endif
+
+// instantiate the calibrated sensor object
+//CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);
 
 //#############_COMMANDER INTERFACE_#################
 Commander command = Commander(Serial);
@@ -40,6 +43,7 @@ int SimpleFOCinit(float bus_v){
     sensor.enableInterrupts(doA, doB);    // Enable interrupts for quadrature signals
     motor.linkSensor(&sensor);            // Link sensor to motor instance  
   #else                                   // Default, SPI interface of magnetic sensor
+    sensor.clock_speed = 5000000;         // Set SPI clock freq. to 5MHz, default is 1MHz
     sensor.init();                        // Initialise magnetic sensor hardware
     motor.linkSensor(&sensor);            // Link sensor to motor instance 
   #endif
@@ -123,6 +127,15 @@ int SimpleFOCinit(float bus_v){
 
   motor.useMonitoring(Serial);      // use monitoring functionality
   motor.init();                     // initialise motor
+
+  //// set voltage to run calibration
+  //sensor_calibrated.voltage_calibration = bus_v*alignStrength/2;
+  //// Running calibration
+  //sensor_calibrated.calibrate(motor); 
+  //
+  ////Serial.println("Calibrating Sensor Done.");
+  //// Linking sensor to motor object
+  //motor.linkSensor(&sensor_calibrated);
 
   Serial.println("DAGOR: Init current sense");
   // current sense init hardware

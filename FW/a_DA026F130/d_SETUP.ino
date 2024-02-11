@@ -29,7 +29,8 @@ void setup() {
   delay(250);
   drv_init();
 
-  int sfoc = SimpleFOCinit(bus_v);
+  int sfoc = SimpleFOCinit(12);
+  //int sfoc = SimpleFOCinit(bus_v);
 
   if (sfoc){
     state_machine = LIFE_IS_GOOD;
@@ -37,6 +38,7 @@ void setup() {
   }
   else { 
     Serial.println("DAGOR: Could not initialize.");
+    //state_machine = LIFE_IS_GOOD;
     state_machine = SIMPLEFOC_ERROR;
     faultStatus();
   }

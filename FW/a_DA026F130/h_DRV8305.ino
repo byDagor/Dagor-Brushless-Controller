@@ -24,10 +24,10 @@ void drv_init(){
   //Serial.println(resp1, BIN);
   //Serial.println(resp2, BIN);
 
-  //Set DRV83045's amplifier gain to 80x
+  //Set DRV83045's amplifier gain to 40x
   digitalWrite(cs, LOW);
   byte resp7 = SPI.transfer(B01010000);
-  byte resp8 = SPI.transfer(B00111111);
+  byte resp8 = SPI.transfer(B01101010);
   digitalWrite(cs, HIGH);
   //Serial.println(resp7, BIN);
   //Serial.println(resp8, BIN);

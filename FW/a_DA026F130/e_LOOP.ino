@@ -34,11 +34,12 @@ void loop() {
   // Functions inside this "if" will execute at a 5hz rate (by default).
   // Uncomment/ comment the functions that you wish to use.
   if(stateT >= 1000000/callerFixedFreq){
+  //if(stateT >= 1000000/250){
     loopPeriod(true);
     
     // Un/ comment the functions bellow that you wish to use.
     faultStatus();          // monitors faults and warnings of the DRV8305
-    tempStatus(stateT);     // monitors operating temperature, true argument to print temprature
+    //tempStatus(stateT);     // monitors operating temperature, true argument to print temprature
     
     
     stateT = 0;
