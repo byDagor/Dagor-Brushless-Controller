@@ -28,14 +28,14 @@ void loop() {
   unsigned long timeDif = timeManagement();
   stateT += timeDif;
   
-  loopPeriod(false);
+  //loopPeriod(false);
 
   // Fixed rate functions
   // Functions inside this "if" will execute at a 5hz rate (by default).
   // Uncomment/ comment the functions that you wish to use.
   if(stateT >= 1000000/callerFixedFreq){
   //if(stateT >= 1000000/250){
-    loopPeriod(true);
+    //loopPeriod(true);
     
     // Un/ comment the functions bellow that you wish to use.
     faultStatus();          // monitors faults and warnings of the DRV8305
@@ -47,9 +47,9 @@ void loop() {
     // Print for monitoring -> Uncomment to use.
     //voltageMonitor(true);
     //rotorData(false);          // true -> rotor velocity, false -> rotor position
-    //phaseCurrents(false);        // true -> DQspace currents, false -> phase currents
+    phaseCurrents(true);        // true -> DQspace currents, false -> phase currents
     //phaseVoltages(true);    // true -> DQspace voltages, false -> phase voltages
-    //Serial.println();       // if printing to serial monitor uncomment to insert a line break
+    Serial.println();       // if printing to serial monitor uncomment to insert a line break
   }
   
 }

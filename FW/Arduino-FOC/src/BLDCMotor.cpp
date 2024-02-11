@@ -80,8 +80,9 @@ void BLDCMotor::init() {
   // update the controller limits
   if(current_sense){
     // current control loop controls voltage
-    PID_current_q.limit = voltage_limit;
-    PID_current_d.limit = voltage_limit;
+    //PID_current_q.limit = voltage_limit;
+    //PID_current_d.limit = voltage_limit;
+    // commented above out because they overwrite the limits set in the void setup(), so do nothing here.
   }
   if(_isset(phase_resistance) || torque_controller != TorqueControlType::voltage){
     // velocity control loop controls current
@@ -362,6 +363,8 @@ void BLDCMotor::loopFOC() {
       // filter values
       current.q = LPF_current_q(current.q);
       current.d = LPF_current_d(current.d);
+      // constrain QD current to QD axis limits
+      current_sp = _constrain(current_sp,-PID_current_q.limit,PID_current_q.limit);
       // calculate the phase voltages
       voltage.q = PID_current_q(current_sp - current.q);
       voltage.d = PID_current_d(-current.d);

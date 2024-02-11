@@ -18,7 +18,7 @@
 const byte pp = 7;                                //BLDC motor number of pole pairs
 const float phaseRes = 0.25 ;                     //Phase winding resistance [ohms]
 const float sourceVoltage = 11.1;                 //Voltage of your power source [Volts]
-const float amp_limit = 2.5;                      //IQ current limit [amps]                              - LV
+const float amp_limit = 2.5;                      //IQ current limit [amps]                              
 //const float maxPowersourceCurrent = 5.500;      //Very rough approximation of max current draw from the power source [Amps]
                                                   //This is not the phase current through the motor.
 const float alignStrength = 0.05;                 // Percentage of available voltage used to calibrate the sensor on start-up
@@ -47,16 +47,17 @@ const float cp = 0.025 ;              //QD current loops PROPORTONAL gain value 
 const float ci = 50.0;                //QD current loops INTEGRAL gain value              - MQI & MDI
 const float cd = 0.0;                 //QD current loops DERIVATIVE gain value            - MQD & MDD
 const float lpQDFilter = 0.001;       //QD current loops measurement low-pass filter      - QF & DF
-//const float vp = 0.1;                 //Velocity control loop PROPORTIONAL gain value     - VP
-//const float vi = 1;                   //Velocity control loop INTEGRAL gain value         - VI
-//const float vd = 0;                   //Velocity control loop DERIVATIVE gain value       - VD
-//const float lpVelFilter = 0.000;      //Velocity measurement low-pass filter              - VF
+const float vp = 0.1;                 //Velocity control loop PROPORTIONAL gain value     - VP
+const float vi = 1;                   //Velocity control loop INTEGRAL gain value         - VI
+const float vd = 0;                   //Velocity control loop DERIVATIVE gain value       - VD
+const float lpVelFilter = 0.000;      //Velocity measurement low-pass filter              - VF
+const float velocity_limit = 2.5;     //Velocity limit [rpm]                              - LV
 const float ap = 5.0;                 //Position control loop PROPORTIONAL gain value     - AP
 const float ai = 0;                   //Position control loop INTEGRAL gain value         - AI
 const float ad = 0.25;                //Position control loop DERIVATIVE gain value       - AD
 const float lpPosFilter = 0.001;      //Position measurment low-pass filter               - AF
 const float voltageRamp = 5000;       //Change in voltage allowed [Volts per sec]         - VR
-//const float velocity = 2.5;         //Velocity limit [rpm]                              - LV
+
 
 
 //########_ADVANCED CONFIGURATON_##########

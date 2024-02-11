@@ -3,9 +3,9 @@
 //###########################################
 
 //#############_SIMPLEFOC INSTANCES_#################
-BLDCMotor motor = BLDCMotor(pp);                                                  //BLDCMotor instance
+BLDCMotor motor = BLDCMotor(pp, phaseRes);                                              //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
-LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2);   //Current sensing instance
+LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2);       //Current sensing instance
 
 #ifdef ENCODER
   Encoder sensor = Encoder(32, 17, 512);       // Quadrature encoder instance
@@ -43,7 +43,7 @@ int SimpleFOCinit(float bus_v){
     sensor.enableInterrupts(doA, doB);    // Enable interrupts for quadrature signals
     motor.linkSensor(&sensor);            // Link sensor to motor instance  
   #else                                   // Default, SPI interface of magnetic sensor
-    sensor.clock_speed = 5000000;         // Set SPI clock freq. to 5MHz, default is 1MHz
+    sensor.clock_speed = 10000000;        // Set SPI clock freq. to 10MHz, default is 1MHz
     sensor.init();                        // Initialise magnetic sensor hardware
     motor.linkSensor(&sensor);            // Link sensor to motor instance 
   #endif
@@ -67,19 +67,19 @@ int SimpleFOCinit(float bus_v){
   if (trueTorque){
     motor.linkCurrentSense(&current_sense);
     motor.torque_controller = TorqueControlType::foc_current; 
-    motor.voltage_limit = bus_v; //phaseRes*maxPowersourceCurrent; 
+    motor.voltage_limit = bus_v;
   }
   else{
     motor.torque_controller = TorqueControlType::voltage; 
     //driver.voltage_limit = sourceVoltage;
-    motor.voltage_limit = bus_v; //phaseRes*maxPowersourceCurrent; 
+    motor.voltage_limit = bus_v;
     // Measured phase resistance [ohms]
     //motor.phase_resistance = phaseRes;
     //motor.current_limit = maxPowersourceCurrent;
   }
 
   // Sensor aligning voltage
-  motor.voltage_sensor_align = bus_v*alignStrength; //(maxPowersourceCurrent*phaseRes)*alignStrength;
+  motor.voltage_sensor_align = bus_v*alignStrength;
   Serial.print("MOT: Align voltage -> ");
   Serial.println(motor.voltage_sensor_align);
 
@@ -87,32 +87,30 @@ int SimpleFOCinit(float bus_v){
   motor.PID_current_q.P = cp;
   motor.PID_current_q.I = ci;
   motor.PID_current_q.D = cd;
-  motor.PID_current_q.limit = 2.5; //sourceVoltage; //phaseRes*maxPowersourceCurrent;
+  motor.PID_current_q.limit = amp_limit;
   motor.PID_current_q.output_ramp = voltageRamp;
   motor.LPF_current_q.Tf = lpQDFilter;
 
   motor.PID_current_d.P = cp;
   motor.PID_current_d.I = ci;
   motor.PID_current_d.D = cd;
-  motor.PID_current_d.limit = 2.5; //sourceVoltage; //phaseRes*maxPowersourceCurrent;
+  motor.PID_current_d.limit = amp_limit;
   motor.PID_current_d.output_ramp = voltageRamp;
   motor.LPF_current_d.Tf = lpQDFilter;
 
-  /*
   // velocity PI controller parameters
   motor.PID_velocity.P = vp;
   motor.PID_velocity.I = vi;
   motor.PID_velocity.D = vd;
   motor.PID_velocity.output_ramp = voltageRamp;
   motor.LPF_velocity.Tf = lpVelFilter;
-  */
+  motor.velocity_limit = velocity_limit;
   
   // angle P controller
   motor.P_angle.P = ap;
   motor.P_angle.I = ai;
   motor.P_angle.D = ad;
   // maximal velocity of the poisition control
-  motor.velocity_limit = amp_limit;
   motor.LPF_angle.Tf = lpPosFilter;
   
   
@@ -145,7 +143,7 @@ int SimpleFOCinit(float bus_v){
   // skip alignment procedure
   current_sense.skip_align = true;
 
-  int initFOC_exit_code = 999;
+  int initFOC_exit_code = -1;
 
   //if (skipCalibration && natDirection == "CW") initFOC_exit_code =  motor.initFOC(elecOffset,CW);              // start FOC skipping sensor calibration
   //else if (skipCalibration && natDirection == "CCW") initFOC_exit_code = motor.initFOC(elecOffset,CCW);        // start FOC skipping sensor calibration
@@ -166,10 +164,10 @@ int SimpleFOCinit(float bus_v){
     drv_deinit();
   }
 
-  //#ifdef ESP_NOW
+  #if defined ESP_NOW || defined RS485
       commandEspNow.add(motorID, onMotor, " BLDC");
       if (!commandDebug) commandEspNow.verbose = VerboseMode::nothing;
-  //#endif
+  #endif
 
   return initFOC_exit_code;
 }
