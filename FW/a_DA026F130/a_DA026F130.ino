@@ -6,15 +6,14 @@
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
 #define ACT_ID 100        // Actuator ID
-
-// Below are the variables dependent on the user's set-up. 
-
-//TODO: encoder limits
+ 
+//TODO:
 //      stall detection
-//      RS-485
+//      RS-485-based protocol
 //      Position control runaway protection
+//      General runaway protection
 
-//#######_USER VARIABLES_#######
+//#######_USER PARAMETERS_#######
 const byte pp = 7;                                //BLDC motor number of pole pairs
 const float phaseRes = 0.25 ;                     //Phase winding resistance [ohms]
 const float sourceVoltage = 11.1;                 //Voltage of your power source [Volts]
@@ -22,9 +21,10 @@ const float amp_limit = 2.5;                      //IQ current limit [amps]
 //const float maxPowersourceCurrent = 5.500;      //Very rough approximation of max current draw from the power source [Amps]
                                                   //This is not the phase current through the motor.
 const float alignStrength = 0.05;                 // Percentage of available voltage used to calibrate the sensor on start-up
-const String controlType = "C2";                  //control type: C0 -> torque (voltage)
+const String controlType = "C0";                  //control type: C0 -> torque (voltage)
                                                                // C1 -> velocity
                                                                // C2 -> angular position
+
 
 // Below are the control loops parameters, to obtain the desired response out of the controller, 
 // they need to be tuned. These parameters can be tuned via the "Commander" interface, which is 
@@ -41,10 +41,11 @@ const String controlType = "C2";                  //control type: C0 -> torque (
 // Make sure to write the final values of the parameters after tuning to update the firmware and 
 // upload it again.
 
+
 //#######_CONTROLLER PARAMETERS_#######
                                                                                   //  Commander IDs
 const float cp = 0.025 ;              //QD current loops PROPORTONAL gain value           - MQP & MDP
-const float ci = 50.0;                //QD current loops INTEGRAL gain value              - MQI & MDI
+const float ci = 100.0;                //QD current loops INTEGRAL gain value              - MQI & MDI
 const float cd = 0.0;                 //QD current loops DERIVATIVE gain value            - MQD & MDD
 const float lpQDFilter = 0.001;       //QD current loops measurement low-pass filter      - QF & DF
 const float vp = 0.1;                 //Velocity control loop PROPORTIONAL gain value     - VP
@@ -55,14 +56,14 @@ const float velocity_limit = 2.5;     //Velocity limit [rpm]                    
 const float ap = 5.0;                 //Position control loop PROPORTIONAL gain value     - AP
 const float ai = 0;                   //Position control loop INTEGRAL gain value         - AI
 const float ad = 0.25;                //Position control loop DERIVATIVE gain value       - AD
-const float lpPosFilter = 0.001;      //Position measurment low-pass filter               - AF
+const float lpPosFilter = 0.000;      //Position measurment low-pass filter               - AF
 const float voltageRamp = 5000;       //Change in voltage allowed [Volts per sec]         - VR
 
 
-
-//########_ADVANCED CONFIGURATON_##########
-bool trueTorque = true;               // True torque mode, current control or voltage control mode.
-bool focModulation = false;           // Field oriented control modulation type: true -> Sine PWM
+//########_ADVANCED PARAMETERS_##########
+#define CURRENT_SENSE                 // Define if using current sense, difference between current control or voltage control mode.
+bool trueTorque = true;               // Even if using current sense, mode can be voltage torque mode if set to false
+bool focModulation = true;            // Field oriented control modulation type: true -> Sine PWM
                                                                              // false -> Space Vector PWM
 const int maxTemp = 75;               // Maximum operating temperature of the power-stage [°C]
 const float overTempTime = 1.0;       // Time in an over-temperature senario to disable the controller [seconds]
@@ -76,16 +77,16 @@ bool skipCalibration = false;         // Skip the calibration on start-up
                                       // electric angle offset and natural direction printed on start-up
 const float elecOffset = 0.00;        // Printed as: "MOT: Zero elec. angle: X.XX"
 String natDirection = "CW";           // Can be either CW or CCW
+#undef    CALIBRATED_SENSOR           // Run sensor eccentricity calibration on start-up
 #define   MONITORING                  // define if using monitoring (usb to ttl connected to board)
-#undef   ENCODER                      // define -> ABI interface of magnetic sensor (incremental encoder) 
+#undef    ENCODER                     // define -> ABI interface of magnetic sensor (incremental encoder) 
                                       // undef  -> SPI interface (absolute rotational position)
 
-//#######_ESP-NOW_###########
-#undef ESP_NOW                                                               // define -> enable ESP_NOW
-const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};      // Set address to eanble ESP-NOW broadcast, sending packets over broadcast disables ACK, very important for high bandwidth.
+//#######_WIRED/WIRELESS COMMUNICATION_###########
+#undef ESP_NOW                                                                // define -> enable ESP_NOW
 #undef RS485
 
-//#######_ACTIVE COMPLIANCE_#########
+//#######_ADMITTANCE MODE_#########
 bool gravityCompMode = false;         //enable compliance mode at start-up
 const float kgc = 0.01;               //Proportional gain of the gravity compensation controller
 int currentQthreshold = 0.02;         //minimum current that defines a force applied on the actuator's output [A]

@@ -42,30 +42,33 @@ void loopPeriod(bool reset){
 
 // Gravity compensation mode
 void gravityComp(){
-  static float holdPosition = 0;         //moving position depending on external forces applied to the actuator's output
-  //This inside the void loop
-  if (gravityCompMode){
 
-    float ea = motor.electricalAngle();
-    DQCurrent_s current = current_sense.getFOCCurrents(ea);
-  
-    if (current.q > currentQthreshold && abs(sensor.getAngle() - holdPosition) > positionThreshold){
-        holdPosition -= kgc * (current.q - currentQthreshold);
-    }
-    else if (current.q < -currentQthreshold && abs(sensor.getAngle() - holdPosition) > positionThreshold){
-        holdPosition -= kgc * (current.q + currentQthreshold);
-    }
-    //Serial.println(current.q);
-    //Serial.print(", ");
-    //Serial.println}
+  #ifdef CURRENT_SENSE
+    static float holdPosition = 0;         //moving position depending on external forces applied to the actuator's output
+    //This inside the void loop
+    if (gravityCompMode){
 
-    (holdPosition);
-    motor.move(holdPosition);
+      float ea = motor.electricalAngle();
+      DQCurrent_s current = current_sense.getFOCCurrents(ea);
     
-  }
-  else{
-    motor.move();
-  }
+      if (current.q > currentQthreshold && abs(sensor.getAngle() - holdPosition) > positionThreshold){
+          holdPosition -= kgc * (current.q - currentQthreshold);
+      }
+      else if (current.q < -currentQthreshold && abs(sensor.getAngle() - holdPosition) > positionThreshold){
+          holdPosition -= kgc * (current.q + currentQthreshold);
+      }
+      //Serial.println(current.q);
+      //Serial.print(", ");
+      //Serial.println}
+
+      (holdPosition);
+      motor.move(holdPosition);
+      
+    }
+    else{
+      motor.move();
+    }
+  #endif
 }
 
 
@@ -116,15 +119,18 @@ void voltageMonitor(bool debug){
 
 // Print the rotor position in radians or rotor velocity in radians over second
 void rotorData(bool rotorVelocity){
-  if (!rotorVelocity){
+  if (rotorVelocity){
     float e = sensor.getAngle();
     Serial.print("Rads: ");
-    Serial.print(e,4);    
+    Serial.print(e,4);  
+    Serial.print("\t");  
   }
   else{
-    float e = sensor.getVelocity();
-    Serial.print("Vel: ");
+    //float e = sensor.getVelocity();
+    float e = sensor.getMechanicalAngle();
+    //Serial.print("Vel: ");
     Serial.print(e,4); 
+    Serial.print("\t");
   }
 
 }
@@ -132,26 +138,32 @@ void rotorData(bool rotorVelocity){
 
 
 // Print each phase current or the current in the DQ space
-void phaseCurrents(bool DQspace){
-  
-  if(DQspace){
-    //float current_magnitude = current_sense.getDCCurrent();
-    //Serial.println(current_magnitude); // milli Amps
+void printCurrents(bool DQspace){
 
-    DQCurrent_s current = current_sense.getFOCCurrents(motor.electricalAngle());
-    Serial.print(current.d);
-    Serial.print("\t");
-    Serial.print(current.q);
-    Serial.print("\t");    
-  }
-  else{
-    PhaseCurrent_s currents = current_sense.getPhaseCurrents();
-    Serial.print(currents.a); // [Amps]
-    Serial.print("\t");
-    Serial.print(currents.b); // [Amps]
-    Serial.print("\t");
-    Serial.print(currents.c); // [Amps]
-  }
+  #ifdef CURRENT_SENSE
+    if(DQspace){
+      //float current_magnitude = current_sense.getDCCurrent();
+      //Serial.println(current_magnitude); // milli Amps
+
+      //DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle);
+      //DQCurrent_s current = current_sense.getFOCCurrents( _electricalAngle(motor.shaft_angle, motor.pole_pairs) );
+      Serial.print(motor.current.d);
+      Serial.print("\t");
+      Serial.print(motor.current.q);
+      Serial.print("\t");    
+    }
+    else{
+      PhaseCurrent_s currents = current_sense.getPhaseCurrents();
+      Serial.print(currents.a); // [Amps]
+      Serial.print("\t");
+      Serial.print(currents.b); // [Amps]
+      Serial.print("\t");
+      Serial.print(currents.c); // [Amps]
+      Serial.print("\t");
+    }
+  #else
+    Serial.print("Current sense not initialized.");
+  #endif
 }
 
 // Print each phase voltage or the equivalent in the DQ space
@@ -168,6 +180,7 @@ void phaseVoltages(bool DQspace){
     Serial.print("\t");
     Serial.print(motor.Ub); // [volts]
     Serial.print("\t");
-    Serial.println(motor.Uc); // [volts]
+    Serial.print(motor.Uc); // [volts]
+    Serial.print("\t");
   }
 }

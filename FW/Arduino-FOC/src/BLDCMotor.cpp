@@ -572,7 +572,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       Ualpha =  _ca * Ud - _sa * Uq;  // -sin(angle) * Uq;
       Ubeta =  _sa * Ud + _ca * Uq;    //  cos(angle) * Uq;
 
-      // Clarke transform
+      // inverse Clarke transform
       Ua = Ualpha;
       Ub = -0.5f * Ualpha + _SQRT3_2 * Ubeta;
       Uc = -0.5f * Ualpha - _SQRT3_2 * Ubeta;

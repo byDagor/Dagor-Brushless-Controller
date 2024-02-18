@@ -7,8 +7,11 @@
 //SimpleFOC Version 2.1
 #include <SimpleFOC.h>
 #include <SPI.h>
-//#include <SimpleFOCDrivers.h>
-//#include <encoders/calibrated/CalibratedSensor.h>
+
+#ifdef CALIBRATED_SENSOR
+  #include <SimpleFOCDrivers.h>
+  #include <encoders/calibrated/CalibratedSensor.h>
+#endif
 
 #ifdef ESP_NOW
   #include <esp_now.h>
@@ -53,15 +56,13 @@ enum Dagor_state {
 //#############_TIME MANAGEMENT_#####################
 unsigned long stateT = 0;
 
-
-
 //#############_SETUP FUNCTIONS DECLARATION_################
 int SimpleFOCinit(float bus_v);
-void drv_init();
-void drv_deinit();
+void drv_enable();
 void spi_init();
 void gpio_init();
 void current_dc_calib(bool activate);
+void calibratePhaseZeroOffset();
 
 //#############_LOOP FUNCTIONS DECLARATION_#################
 unsigned long timeManagement();

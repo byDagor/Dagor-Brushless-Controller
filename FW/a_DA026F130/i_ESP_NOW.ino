@@ -9,6 +9,8 @@
 #define CHANNEL 11
 #define DATARATE WIFI_PHY_RATE_1M_L
 
+const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};      // Set address to eanble ESP-NOW broadcast, sending packets over broadcast disables ACK, very important for high bandwidth.
+
 void espNowInit(){
   WiFi.disconnect();
   // Set device as a Wi-Fi Station

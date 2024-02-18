@@ -2,10 +2,15 @@
 //               SimpleFOC
 //###########################################
 
+
+
 //#############_SIMPLEFOC INSTANCES_#################
 BLDCMotor motor = BLDCMotor(pp, phaseRes);                                              //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
-LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2);       //Current sensing instance
+
+#ifdef CURRENT_SENSE
+  LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2);       //Current sensing instance
+#endif
 
 #ifdef ENCODER
   Encoder sensor = Encoder(32, 17, 512);       // Quadrature encoder instance
@@ -16,17 +21,18 @@ LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2)
   MagneticSensorSPI sensor = MagneticSensorSPI(AS5147_SPI, sensorCS);     //SPI Magnetic sensor instance
 #endif
 
-// instantiate the calibrated sensor object
-//CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);
+#ifdef CALIBRATED_SENSOR
+  CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);          // instantiate the calibrated sensor object
+#endif
 
 //#############_COMMANDER INTERFACE_#################
 Commander command = Commander(Serial);
 void onMotor(char* cmd){ command.motor(&motor, cmd); }
 
-//#ifdef ESP_NOW
+#if defined(ESP_NOW) || defined(RS485)
   Commander commandEspNow = Commander();
   void onMotorEspNow(char* cmd){ commandEspNow.motor(&motor, cmd); }
-//#endif
+#endif
 
 
 // Initialization of SimpleFOC
@@ -50,10 +56,13 @@ int SimpleFOCinit(float bus_v){
   
   // driver config, power supply voltage [V]
   driver.voltage_power_supply = bus_v;
-  driver.voltage_limit = bus_v;
+  driver.voltage_limit = driver.voltage_power_supply;
   driver.init();
   motor.linkDriver(&driver);
-  current_sense.linkDriver(&driver);
+
+  #ifdef CURRENT_SENSE
+    current_sense.linkDriver(&driver);
+  #endif
   
   if (focModulation) motor.foc_modulation = FOCModulationType::SinePWM;
   else motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
@@ -64,26 +73,24 @@ int SimpleFOCinit(float bus_v){
   else motor.controller = MotionControlType::angle;
 
   // link the current sense to the motor
-  if (trueTorque){
+  #ifdef CURRENT_SENSE
     motor.linkCurrentSense(&current_sense);
-    motor.torque_controller = TorqueControlType::foc_current; 
+    if (trueTorque) motor.torque_controller = TorqueControlType::foc_current;
+    else motor.torque_controller = TorqueControlType::voltage; 
     motor.voltage_limit = bus_v;
-  }
-  else{
+  #else
     motor.torque_controller = TorqueControlType::voltage; 
-    //driver.voltage_limit = sourceVoltage;
     motor.voltage_limit = bus_v;
-    // Measured phase resistance [ohms]
-    //motor.phase_resistance = phaseRes;
+    //motor.phase_resistance = phaseRes;          // Measured phase resistance [ohms]
     //motor.current_limit = maxPowersourceCurrent;
-  }
+  #endif
 
   // Sensor aligning voltage
   motor.voltage_sensor_align = bus_v*alignStrength;
   Serial.print("MOT: Align voltage -> ");
   Serial.println(motor.voltage_sensor_align);
 
-  // Current PI controller parameters
+  // Current PI controller parameters - q_axis
   motor.PID_current_q.P = cp;
   motor.PID_current_q.I = ci;
   motor.PID_current_q.D = cd;
@@ -91,6 +98,7 @@ int SimpleFOCinit(float bus_v){
   motor.PID_current_q.output_ramp = voltageRamp;
   motor.LPF_current_q.Tf = lpQDFilter;
 
+  // Current PI controller parameters - d_axis
   motor.PID_current_d.P = cp;
   motor.PID_current_d.I = ci;
   motor.PID_current_d.D = cd;
@@ -110,9 +118,7 @@ int SimpleFOCinit(float bus_v){
   motor.P_angle.P = ap;
   motor.P_angle.I = ai;
   motor.P_angle.D = ad;
-  // maximal velocity of the poisition control
-  motor.LPF_angle.Tf = lpPosFilter;
-  
+  motor.LPF_angle.Tf = lpPosFilter;       // maximal velocity of the poisition control
   
   // Position offset, used to define an absolute 0 position [rads]
   motor.sensor_offset = sensorOffset;
@@ -126,22 +132,20 @@ int SimpleFOCinit(float bus_v){
   motor.useMonitoring(Serial);      // use monitoring functionality
   motor.init();                     // initialise motor
 
-  //// set voltage to run calibration
-  //sensor_calibrated.voltage_calibration = bus_v*alignStrength/2;
-  //// Running calibration
-  //sensor_calibrated.calibrate(motor); 
-  //
-  ////Serial.println("Calibrating Sensor Done.");
-  //// Linking sensor to motor object
-  //motor.linkSensor(&sensor_calibrated);
+  #ifdef CALIBRATED_SENSOR
+    sensor_calibrated.voltage_calibration = bus_v*alignStrength;        // set voltage to run calibration
+    sensor_calibrated.calibrate(motor);                                 // Running calibration
+    //Serial.println("Calibrating Sensor Done.");
+    motor.linkSensor(&sensor_calibrated);                               // Linking sensor to motor object
+  #endif
 
   Serial.println("DAGOR: Init current sense");
-  // current sense init hardware
-  current_sense.init();
-  // link motor and current sense
-  motor.linkCurrentSense(&current_sense);
-  // skip alignment procedure
-  current_sense.skip_align = true;
+
+  #ifdef CURRENT_SENSE
+    current_sense.init();                           // current sense init hardware
+    motor.linkCurrentSense(&current_sense);         // link motor and current sense
+    current_sense.skip_align = true;                // skip alignment procedure
+  #endif
 
   int initFOC_exit_code = -1;
 
@@ -160,14 +164,12 @@ int SimpleFOCinit(float bus_v){
     command.add(motorID, onMotor, " BLDC");
     if (!commandDebug) command.verbose = VerboseMode::nothing;  
   }
-  else {
-    drv_deinit();
-  }
 
-  #if defined ESP_NOW || defined RS485
+  #if defined(ESP_NOW) || defined(RS485)
       commandEspNow.add(motorID, onMotor, " BLDC");
       if (!commandDebug) commandEspNow.verbose = VerboseMode::nothing;
   #endif
 
   return initFOC_exit_code;
 }
+

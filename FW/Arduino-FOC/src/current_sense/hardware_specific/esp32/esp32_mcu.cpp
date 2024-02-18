@@ -75,6 +75,7 @@ float _readADCVoltageLowSide(const int pin, const void* cs_params){
   for(int i=0; i < adc_pin_count[unit]; i++){
     if( pin == ((ESP32MCPWMCurrentSenseParams*)cs_params)->pins[i]) // found in the buffer
       return adc_buffer[unit][buffer_index + i] * adc_voltage_conv;
+      //return adc_buffer[unit][buffer_index + i];
   }
   // not found
   return  0;
@@ -111,8 +112,8 @@ void _driverSyncLowSide(void* driver_params, void* cs_params){
 
   // low-side register enable interrupt
   mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
-  mcpwm_dev->int_ena.timer1_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
-  //mcpwm_dev->int_ena.timer2_tep_int_ena = true;//A PWM timer 0 TEP event will trigger this interrupt
+  mcpwm_dev->int_ena.timer1_tep_int_ena = true;//A PWM timer 1 TEP event will trigger this interrupt
+  mcpwm_dev->int_ena.timer2_tep_int_ena = true;//A PWM timer 2 TEP event will trigger this interrupt
   // high side registers enable interrupt
   //mcpwm_dev->int_ena.timer0_tep_int_ena = true;//A PWM timer 0 TEZ event will trigger this interrupt
 
@@ -133,7 +134,7 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*){
   // low side
   uint32_t mcpwm_intr_status_0 = MCPWM0.int_st.timer0_tep_int_st;
   uint32_t mcpwm_intr_status_1 = MCPWM0.int_st.timer1_tep_int_st;
-  //uint32_t mcpwm_intr_status_2 = MCPWM0.int_st.timer2_tep_int_st;
+  uint32_t mcpwm_intr_status_2 = MCPWM0.int_st.timer2_tep_int_st;
 
   //if(mcpwm_intr_status_0 || mcpwm_intr_status_1){
   //  adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
@@ -141,22 +142,31 @@ static void IRAM_ATTR mcpwm0_isr_handler(void*){
   //  if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
   //}
 
-  if(mcpwm_intr_status_0 && currentState == 0){
+  static int block = 0;
+
+  if(mcpwm_intr_status_0 && currentState == 0 && !block){
     currentState = 1;
-    adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
-    adc_read_index[0]++;
-    if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
-  }else if(mcpwm_intr_status_1 && currentState == 1){
-    currentState = 0;
-    adc_buffer[0][adc_read_index[0]] = adcRead(adc_pins[0][adc_read_index[0]]);
-    adc_read_index[0]++;
-    if(adc_read_index[0] == adc_pin_count[0]) adc_read_index[0] = 0;
+    block = 1;
+    adc_buffer[0][0] = adcRead(adc_pins[0][0]);
   }
+  if(mcpwm_intr_status_1 && currentState == 1 && !block){
+    //currentState = 2;
+    currentState = 0;
+    block = 1;
+    adc_buffer[0][1] = adcRead(adc_pins[0][1]);
+  }
+  //if(mcpwm_intr_status_1 && currentState == 2 && !block){
+  //  currentState = 0;
+  //  block = 1;
+  //  adc_buffer[0][2] = adcRead(adc_pins[0][2]);
+  //}
+
+  block = 0;
 
   // low side
   MCPWM0.int_clr.timer0_tep_int_clr = mcpwm_intr_status_0;
   MCPWM0.int_clr.timer1_tep_int_clr = mcpwm_intr_status_1;
-  //MCPWM0.int_clr.timer2_tep_int_clr = mcpwm_intr_status_2;
+  MCPWM0.int_clr.timer2_tep_int_clr = mcpwm_intr_status_2;
   // high side
   // MCPWM0.int_clr.timer0_tez_int_clr = mcpwm_intr_status_0;
   // MCPWM0.int_clr.timer1_tez_int_clr = mcpwm_intr_status_1;

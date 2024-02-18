@@ -42,3 +42,38 @@ void gpio_init(){
   pinMode(enGate, OUTPUT);
   digitalWrite(enGate, LOW);
 }
+
+void calibratePhaseZeroOffset(){
+  const float calibration_rounds = 2000;
+  float adc_voltage_conv = (3.3f)/(4095.0f);
+
+  drv_enable(true);
+  current_dc_calib(true);
+
+  for (int i = 0; i < calibration_rounds; i++) {
+    offset_ia += analogRead(SO1) * adc_voltage_conv;
+    offset_ib += analogRead(SO2) * adc_voltage_conv;
+    offset_ic += analogRead(SO3) * adc_voltage_conv;
+    _delay(1);
+  }
+
+  current_dc_calib(false);
+  drv_enable(false);
+  
+  // calculate the mean offsets
+  offset_ia = offset_ia / calibration_rounds;
+  offset_ib = offset_ib / calibration_rounds;
+  offset_ic = offset_ic / calibration_rounds;
+
+  Serial.print("Offset ia: ");
+  Serial.println(offset_ia);
+  Serial.print("Offset ib: ");
+  Serial.println(offset_ib);
+  Serial.print("Offset ic: ");
+  Serial.println(offset_ic);
+
+  current_sense.offset_ia = offset_ia;
+  current_sense.offset_ib = offset_ib;
+  current_sense.offset_ic = offset_ic;
+
+}

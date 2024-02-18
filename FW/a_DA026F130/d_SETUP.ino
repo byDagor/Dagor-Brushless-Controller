@@ -2,6 +2,8 @@
 //                  SETUP
 //###########################################
 
+float offset_ia, offset_ib, offset_ic;
+
 void setup() {
   Serial.begin(115200);
   
@@ -26,21 +28,27 @@ void setup() {
   gpio_init();
   spi_init();
 
-  delay(250);
+  delay(200);
   drv_init();
 
   int sfoc = SimpleFOCinit(12);
   //int sfoc = SimpleFOCinit(bus_v);
 
   if (sfoc){
+    Serial.println("DAGOR: Ready BLDC.");
     state_machine = LIFE_IS_GOOD;
-    Serial.println("DAGOR: Ready BLDC.");  
+
+    #ifdef CURRENT_SENSE
+      calibratePhaseZeroOffset();
+      drv_init();
+    #endif
+
   }
   else { 
     Serial.println("DAGOR: Could not initialize.");
     //state_machine = LIFE_IS_GOOD;
     state_machine = SIMPLEFOC_ERROR;
+    drv_enable(false);
     faultStatus();
   }
-  
 }

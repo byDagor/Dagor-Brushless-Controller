@@ -1,13 +1,13 @@
 #include "CurrentSense.h"
 
 
-// get current magnitude 
-//   - absolute  - if no electrical_angle provided 
+// get current magnitude
+//   - absolute  - if no electrical_angle provided
 //   - signed    - if angle provided
 float CurrentSense::getDCCurrent(float motor_electrical_angle){
     // read current phase currents
     PhaseCurrent_s current = getPhaseCurrents();
-    
+
     // calculate clarke transform
     ABCurrent_s ABcurrent = getABCurrents(current);
 
@@ -16,12 +16,12 @@ float CurrentSense::getDCCurrent(float motor_electrical_angle){
 
     // if motor angle provided function returns signed value of the current
     // determine the sign of the current
-    // sign(atan2(current.q, current.d)) is the same as c.q > 0 ? 1 : -1  
+    // sign(atan2(current.q, current.d)) is the same as c.q > 0 ? 1 : -1
     if(motor_electrical_angle) {
         float ct;
         float st;
         _sincos(motor_electrical_angle, &st, &ct);
-        sign = (ABcurrent.beta*ct - ABcurrent.alpha*st) > 0 ? 1 : -1;  
+        sign = (ABcurrent.beta*ct - ABcurrent.alpha*st) > 0 ? 1 : -1;
     }
     // return current magnitude
     return sign*_sqrt(ABcurrent.alpha*ABcurrent.alpha + ABcurrent.beta*ABcurrent.beta);
@@ -29,7 +29,7 @@ float CurrentSense::getDCCurrent(float motor_electrical_angle){
 
 // function used with the foc algorihtm
 //   calculating DQ currents from phase currents
-//   - function calculating park and clarke transform of the phase currents 
+//   - function calculating park and clarke transform of the phase currents
 //   - using getPhaseCurrents and getABCurrents internally
 DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
     // read current phase currents
@@ -37,9 +37,9 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
 
     // calculate clarke transform
     ABCurrent_s ABcurrent = getABCurrents(current);
-    
+
     // calculate park transform
-    DQCurrent_s return_current = getDQCurrents(ABcurrent,angle_el);
+    DQCurrent_s return_current = getDQCurrents(ABcurrent, angle_el);
 
     return return_current;
 }
@@ -53,17 +53,17 @@ ABCurrent_s CurrentSense::getABCurrents(PhaseCurrent_s current){
     float i_alpha, i_beta;
     if(!current.c){
         // if only two measured currents
-        i_alpha = current.a;  
+        i_alpha = current.a;
         i_beta = _1_SQRT3 * current.a + _2_SQRT3 * current.b;
     }else if(!current.a){
         // if only two measured currents
         float a = -current.c - current.b;
-        i_alpha = a;  
+        i_alpha = a;
         i_beta = _1_SQRT3 * a + _2_SQRT3 * current.b;
     }else if(!current.b){
         // if only two measured currents
         float b = -current.a - current.c;
-        i_alpha = current.a;  
+        i_alpha = current.a;
         i_beta = _1_SQRT3 * current.a + _2_SQRT3 * b;
     } else {
         // signal filtering using identity a + b + c = 0. Assumes measurement error is normally distributed.

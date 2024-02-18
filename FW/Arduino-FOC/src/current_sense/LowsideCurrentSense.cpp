@@ -31,7 +31,7 @@ LowsideCurrentSense::LowsideCurrentSense(float _mVpA, int _pinA, int _pinB, int 
     gain_a = volts_to_amps_ratio;
     gain_b = volts_to_amps_ratio;
     gain_c = volts_to_amps_ratio;
-}   
+}
 
 
 // Lowside sensor init function
@@ -45,7 +45,7 @@ int LowsideCurrentSense::init(){
     // configure ADC variables
     params = _configureADCLowSide(driver->params,pinA,pinB,pinC);
     // if init failed return fail
-    if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0; 
+    if (params == SIMPLEFOC_CURRENT_SENSE_INIT_FAILED) return 0;
     // sync the driver
     _driverSyncLowSide(driver->params, params);
     // calibrate zero offsets
@@ -56,13 +56,17 @@ int LowsideCurrentSense::init(){
     return 1;
 }
 // Function finding zero offsets of the ADC
-void LowsideCurrentSense::calibrateOffsets(){    
+void LowsideCurrentSense::calibrateOffsets(){
+    SIMPLEFOC_DEBUG("CUR: Calibrating zero offsets!");
     const int calibration_rounds = 2000;
 
     // find adc offset = zero current voltage
     offset_ia = 0;
     offset_ib = 0;
     offset_ic = 0;
+
+    // Skipping because I do this outside of sfoc
+    /*
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
         _startADC3PinConversionLowSide();
@@ -75,15 +79,25 @@ void LowsideCurrentSense::calibrateOffsets(){
     if(_isset(pinA)) offset_ia = offset_ia / calibration_rounds;
     if(_isset(pinB)) offset_ib = offset_ib / calibration_rounds;
     if(_isset(pinC)) offset_ic = offset_ic / calibration_rounds;
+
+    if(_isset(pinA)) SIMPLEFOC_DEBUG("CUR: offset_ia->", offset_ia);
+    if(_isset(pinB)) SIMPLEFOC_DEBUG("CUR: offset_ib->", offset_ib);
+    if(_isset(pinC)) SIMPLEFOC_DEBUG("CUR: offset_ic->", offset_ic);
+    */
+
 }
 
 // read all three phase currents (if possible 2 or 3)
 PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     PhaseCurrent_s current;
     _startADC3PinConversionLowSide();
-    current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageLowSide(pinA, params) - offset_ia)*gain_a;// amps
-    current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b;// amps
+    current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageLowSide(pinA, params) - offset_ia)*gain_a; // amps
+    current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b; // amps
     current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params) - offset_ic)*gain_c; // amps
+
+    //current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageLowSide(pinA, params)); // counts
+    //current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params)); // counts
+    //current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params)); // counts
     return current;
 }
 
@@ -96,7 +110,7 @@ PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
 // 3 - success but gains inverted
 // 4 - success but pins reconfigured and gains inverted
 int LowsideCurrentSense::driverAlign(float voltage){
-        
+
     int exit_flag = 1;
     if(skip_align) return exit_flag;
 
@@ -192,7 +206,7 @@ int LowsideCurrentSense::driverAlign(float voltage){
         }else{
             // error in current sense - phase either not measured or bad connection
             return 0;
-        }   
+        }
     }
 
     // if phase C measured
@@ -239,7 +253,7 @@ int LowsideCurrentSense::driverAlign(float voltage){
         }else{
             // error in current sense - phase either not measured or bad connection
             return 0;
-        }   
+        }
     }
 
     if(gain_a < 0 || gain_b < 0 || gain_c < 0) exit_flag +=2;

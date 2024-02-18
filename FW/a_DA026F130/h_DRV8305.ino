@@ -11,12 +11,12 @@ void drv_init(){
   //Set to three PWM inputs mode
   digitalWrite(cs, LOW);
   byte resp1 = SPI.transfer(B00111010);
-  byte resp2 = SPI.transfer(B10000110);
+  byte resp2 = SPI.transfer(B10010110);
   digitalWrite(cs, HIGH);
   //Serial.println(resp1, BIN);
   //Serial.println(resp2, BIN);
 
-  //Clamp sense amplifier output to 3.3V - security measure
+  //Clamp sense amplifier output to 3.3V - protect ESP32 adc
   digitalWrite(cs, LOW);
   byte resp3 = SPI.transfer(B01001100);
   byte resp4 = SPI.transfer(B10100000);
@@ -27,26 +27,31 @@ void drv_init(){
   //Set DRV83045's amplifier gain to 40x
   digitalWrite(cs, LOW);
   byte resp7 = SPI.transfer(B01010000);
-  byte resp8 = SPI.transfer(B01101010);
+  byte resp8 = SPI.transfer(B00101010);
   digitalWrite(cs, HIGH);
   //Serial.println(resp7, BIN);
   //Serial.println(resp8, BIN);
 
-  digitalWrite(enGate, HIGH);
-  Serial.println("DRV8305: enGate Enabled");
-  _delay(500);
+  drv_enable(true);
   
 }
 
-void drv_deinit(){
-  digitalWrite(enGate, LOW);
-  Serial.println("DRV8305: enGate Disabled");
-  _delay(500);
+void drv_enable(bool enabled){
+
+  if (enabled){
+    digitalWrite(enGate, HIGH);
+    Serial.println("DRV8305: enGate Enabled");
+    _delay(500);
+  } else{
+    digitalWrite(enGate, LOW);
+    Serial.println("DRV8305: enGate Disabled");
+    _delay(500);
+  }
 }
 
 
 void current_dc_calib(bool activate){
-  //Activate DC calibration mode on DRV8305
+  
   if (activate){
     digitalWrite(cs, LOW);
     byte resp5 = SPI.transfer(B01010111);
@@ -54,8 +59,15 @@ void current_dc_calib(bool activate){
     digitalWrite(cs, HIGH);
     //Serial.println(resp5, BIN);
     //Serial.println(resp6, BIN);
-  }
-  //Deactivate DC calibration mode on DRV8305
+  } //Activate DC calibration mode on DRV8305
+  else {
+    digitalWrite(cs, LOW);
+    byte resp5 = SPI.transfer(B01010000);
+    byte resp6 = SPI.transfer(B00000000);
+    digitalWrite(cs, HIGH);
+    //Serial.println(resp5, BIN);
+    //Serial.println(resp6, BIN);
+  } //Deactivate DC calibration mode on DRV8305
 }
 
 
