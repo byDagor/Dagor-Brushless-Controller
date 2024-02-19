@@ -6,10 +6,11 @@
 
 #define TRY_ESP_ACTION(action, name) if(action == ESP_OK) {Serial.println("\t+ "+String(name));} else {Serial.println("----------Error while " + String(name) + " !---------------");}
 
-#define CHANNEL 11
+#define CHANNEL 11                            // Recomended to use different channels if multiple seperate devices are in the vicinity (multi-master and >two different devices)
 #define DATARATE WIFI_PHY_RATE_1M_L
 
 const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};      // Set address to eanble ESP-NOW broadcast, sending packets over broadcast disables ACK, very important for high bandwidth.
+const uint8_t master_mac[]       = {0xE8, 0x94, 0xF6, 0x27, 0xD1, 0xE6};      // Replace with the MAC address from the ESP-NOW master
 
 void espNowInit(){
   WiFi.disconnect();
@@ -44,19 +45,20 @@ void espNowInit(){
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   
-  memcpy(&inputData, incomingData, sizeof(inputData));
-  
-  if (inputData.act_id == ACT_ID){
-    if (inputData.act_commander1 == 0 && inputData.act_commander1 == 0){
-      if(inputData.act_commander1 == 77){
-        String espNowInput = "M" + String(inputData.act_target_value,3);    // 3 decimenal places for the float
-        char wirelessCommand[10]; 
-        espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
-        commandEspNow.run(wirelessCommand);
+  if (compareMacs(master_mac, mac)) {
+    memcpy(&inputData, incomingData, sizeof(inputData));
+    
+    if (inputData.act_id == ACT_ID){
+      if (inputData.act_commander1 == 0 && inputData.act_commander1 == 0){
+        if (inputData.act_commander1 == "M" ){
+          String espNowInput = "M" + String(inputData.act_target_value,3);    // 3 decimenal places for the float
+          char wirelessCommand[10]; 
+          espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
+          commandEspNow.run(wirelessCommand);
+        }
       }
     }
   }
-  
   
   /*
   inputData.leg_id = *(int*)incomingData;
@@ -108,5 +110,16 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
     String success = "Delivery Fail :(";
   }*/
 }
+
+boolean compareMacs(const uint8_t * arrayA, const uint8_t * arrayB) {
+    int numItems = 6;
+    boolean same = true;
+    long i = 0;
+    while(i<numItems && same) { 
+      same = arrayA[i] == arrayB[i];
+      i++;
+    }
+    return same;
+  }
 
 #endif

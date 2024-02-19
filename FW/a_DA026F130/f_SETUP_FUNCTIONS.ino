@@ -44,6 +44,8 @@ void gpio_init(){
 }
 
 void calibratePhaseZeroOffset(){
+  float offset_ia = 0, offset_ib = 0, offset_ic = 0;
+
   const float calibration_rounds = 2000;
   float adc_voltage_conv = (3.3f)/(4095.0f);
 
@@ -76,4 +78,15 @@ void calibratePhaseZeroOffset(){
   current_sense.offset_ib = offset_ib;
   current_sense.offset_ic = offset_ic;
 
+}
+
+void taskTempSensor(){
+  xTaskCreatePinnedToCore(
+    tempStatus, /* Function to implement the task */
+    "Temperature Sensor Monitor", /* Name of the task */
+    2048,  /* Stack size in words */
+    (void *)print_temp,  /* Task input parameter */
+    0,  /* Priority of the task */
+    NULL,  /* Task handle. */
+    0); /* Core where the task should run */
 }

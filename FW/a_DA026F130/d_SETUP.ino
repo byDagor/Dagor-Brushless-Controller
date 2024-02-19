@@ -2,8 +2,6 @@
 //                  SETUP
 //###########################################
 
-float offset_ia, offset_ib, offset_ic;
-
 void setup() {
   Serial.begin(115200);
   
@@ -38,10 +36,10 @@ void setup() {
     Serial.println("DAGOR: Ready BLDC.");
     state_machine = LIFE_IS_GOOD;
 
-    #ifdef CURRENT_SENSE
-      calibratePhaseZeroOffset();
-      drv_init();
-    #endif
+    //#ifdef CURRENT_SENSE
+    //  calibratePhaseZeroOffset();
+    //  drv_init();
+    //#endif
 
   }
   else { 
@@ -51,4 +49,9 @@ void setup() {
     drv_enable(false);
     faultStatus();
   }
+
+  #ifdef MONITOR_TEMP
+    taskTempSensor();
+  #endif
+
 }

@@ -72,35 +72,49 @@ void gravityComp(){
 }
 
 
-// Temperature status and manager
-void tempStatus(unsigned long timeDif, bool debug){
+// Temperature status and manager  - TODO: Verify temperature formula
+void tempStatus(void *print_temp){
+  bool debug = (bool *)print_temp;
+
+  static float monitor_freq = 4; //[Hz]
   static int tFlag;
   static unsigned int totalTempTime;
+  static unsigned long time_dif = 0, prev_time = 0, now = 0;
 
-  //Read voltage from temperature sensor and transform it to °C
-  float vOut = analogRead(vTemp);
-  float temp = (((vOut*3.3)/4095)-1.8577)/-0.01177;
-  
-  if (debug == true) {
-    Serial.print("Temp: ");
-    Serial.println(temp,2);
-  }
-  
-  if (temp >= maxTemp && tFlag == false){
-    //unsigned long tempTime = micros();
-    totalTempTime += timeDif;
+  while(1){
 
-    //If temperature is high for [overTempTime] seconds disable controller
-    if(totalTempTime >= overTempTime*1000000){
-      tFlag = true;
-      digitalWrite(enGate, LOW);
-      Serial.print("enGate Disabled - Temperature protection: ");
-      Serial.println(temp);
+    now = micros();
+    time_dif = now - prev_time;
+    prev_time = now;
+
+    //Read voltage from temperature sensor and transform it to °C
+    float vOut = analogRead(vTemp);
+    float temp = (((vOut*3.3f)/4095.0f)-1.8577f)/-0.01177f;
+    
+    if (debug == true) {
+      Serial.print("Temp: ");
+      Serial.println(temp,2);
     }
     
-  }
-  else if (temp <= maxTemp && tFlag == false){
-    totalTempTime = 0;
+    if (temp >= maxTemp && tFlag == false){
+      //unsigned long tempTime = micros();
+      totalTempTime += time_dif;
+
+      //If temperature is high for [overTempTime] seconds disable the controller
+      if(totalTempTime >= overTempTime*1000000){
+        tFlag = true;
+        digitalWrite(enGate, LOW);
+        Serial.print("[Dagor] enGate Disabled - Temperature protection: ");
+        Serial.println(temp);
+      }
+      
+    }
+    else if (temp <= maxTemp && tFlag == false){
+      totalTempTime = 0;
+    }
+
+    vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
+
   }
   
 }
@@ -136,6 +150,7 @@ void rotorData(bool rotorVelocity){
 }
 
 
+float lag = 0;
 
 // Print each phase current or the current in the DQ space
 void printCurrents(bool DQspace){
@@ -145,12 +160,15 @@ void printCurrents(bool DQspace){
       //float current_magnitude = current_sense.getDCCurrent();
       //Serial.println(current_magnitude); // milli Amps
 
-      //DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle);
-      //DQCurrent_s current = current_sense.getFOCCurrents( _electricalAngle(motor.shaft_angle, motor.pole_pairs) );
-      Serial.print(motor.current.d);
+      //DQCurrent_s current = current_sense.getFOCCurrents(_normalizeAngle( (float)(motor.sensor_direction * motor.pole_pairs) * (sensor.getMechanicalAngle() + lag*sensor.getVelocity())  - motor.zero_electric_angle ));
+
+      //DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle + 0.5*sensor.getMechanicalAngle());
+      //DQCurrent_s current = current_sense.getFOCCurrents( _electricalAngle(sensor.getMechanicalAngle() + 0.1*sensor.getVelocity(), motor.pole_pairs) );
+      DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle);
+      Serial.print(current.d);
       Serial.print("\t");
-      Serial.print(motor.current.q);
-      Serial.print("\t");    
+      Serial.print(current.q);
+      Serial.print("\t"); 
     }
     else{
       PhaseCurrent_s currents = current_sense.getPhaseCurrents();
@@ -184,3 +202,4 @@ void phaseVoltages(bool DQspace){
     Serial.print("\t");
   }
 }
+

@@ -67,7 +67,7 @@ void calibratePhaseZeroOffset();
 //#############_LOOP FUNCTIONS DECLARATION_#################
 unsigned long timeManagement();
 void gravityComp();
-void tempStatus(unsigned long timeDif, bool debug = false);  
+//void tempStatus(bool debug = false);  
 void voltageMonitor(bool debug = false);
 void rotorData(bool rotorVelocity = false);
 void faultStatus();

@@ -9,7 +9,7 @@ BLDCMotor motor = BLDCMotor(pp, phaseRes);                                      
 BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
 
 #ifdef CURRENT_SENSE
-  LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 40.0f, SO1, SO2);       //Current sensing instance
+  LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2);       //Current sensing instance
 #endif
 
 #ifdef ENCODER
@@ -49,14 +49,14 @@ int SimpleFOCinit(float bus_v){
     sensor.enableInterrupts(doA, doB);    // Enable interrupts for quadrature signals
     motor.linkSensor(&sensor);            // Link sensor to motor instance  
   #else                                   // Default, SPI interface of magnetic sensor
-    sensor.clock_speed = 10000000;        // Set SPI clock freq. to 10MHz, default is 1MHz
+    sensor.clock_speed = 1000000;        // Set SPI clock freq. to 10MHz, default is 1MHz
     sensor.init();                        // Initialise magnetic sensor hardware
     motor.linkSensor(&sensor);            // Link sensor to motor instance 
   #endif
   
   // driver config, power supply voltage [V]
   driver.voltage_power_supply = bus_v;
-  driver.voltage_limit = driver.voltage_power_supply;
+  // driver.voltage_limit = driver.voltage_power_supply;
   driver.init();
   motor.linkDriver(&driver);
 
@@ -70,7 +70,8 @@ int SimpleFOCinit(float bus_v){
   // set FOC loop to be used: MotionControlType::torque, velocity, angle, velocity_openloop, angle_openloop
   if (controlType == "C0") motor.controller = MotionControlType::torque;
   else if (controlType == "C1") motor.controller = MotionControlType::velocity;
-  else motor.controller = MotionControlType::angle;
+  else if (controlType == "C2") motor.controller = MotionControlType::angle;
+  else if (controlType == "C3") motor.controller = MotionControlType::velocity_openloop;
 
   // link the current sense to the motor
   #ifdef CURRENT_SENSE
