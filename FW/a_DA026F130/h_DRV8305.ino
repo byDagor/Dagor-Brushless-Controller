@@ -2,10 +2,16 @@
 //                 DRV8305
 //###########################################
 
+// (byte in which to find the 1s, position querying for a 1, binary result of query)
+#define FIND_BIT(X, Y, Z)\        
+  Z = (X>>Y) & 1;
+
+#define BYTE_CONCATENATE(X, Y, Z)\
+  Z = ((X<<8)+Y);
+
 
 //Configure DRV8305 to desired operation mode
-// TODO: verify commands were sent correcty to DRV
-void drv_init(){
+int drv_init(){
   Serial.println("DAGOR: DRV8305 INIT");
 
   //Set to three PWM inputs mode
@@ -16,13 +22,23 @@ void drv_init(){
   //Serial.println(resp1, BIN);
   //Serial.println(resp2, BIN);
 
+  if (resp1 != 0b000010 || resp2 != 0b10010110){
+    Serial.println("Dagor: DRV cannot init.");
+    return DRV_ERROR;
+  }
+
   //Clamp sense amplifier output to 3.3V - protect ESP32 adc
   digitalWrite(cs, LOW);
   byte resp3 = SPI.transfer(B01001100);
   byte resp4 = SPI.transfer(B10100000);
   digitalWrite(cs, HIGH);
-  //Serial.println(resp1, BIN);
-  //Serial.println(resp2, BIN);
+  //Serial.println(resp3, BIN);
+  //Serial.println(resp4, BIN);
+
+  if (resp3 != 0b00000100 || resp4 != 0b10100000){
+    Serial.println("Dagor: DRV cannot init.");
+    return DRV_ERROR;
+  }
 
   //Set DRV83045's amplifier gain to 80x
   digitalWrite(cs, LOW);
@@ -32,10 +48,18 @@ void drv_init(){
   //Serial.println(resp7, BIN);
   //Serial.println(resp8, BIN);
 
+  if (resp7 != 0b00000000 || resp8 != 0b00111111){
+    Serial.println("Dagor: DRV cannot init.");
+    return DRV_ERROR;
+  }
+
   drv_enable(true);
+
+  return LIFE_IS_GOOD;
   
 }
 
+// Set or reset the enable gate of the DRV8305
 void drv_enable(bool enabled){
 
   if (enabled){
@@ -49,7 +73,7 @@ void drv_enable(bool enabled){
   }
 }
 
-
+// Use the DRV8305 DC calibration mode, shorts the current control inputs to register 0 amps through the phase shunt resistor
 void current_dc_calib(bool activate){
   
   if (activate){
@@ -70,9 +94,8 @@ void current_dc_calib(bool activate){
   } //Deactivate DC calibration mode on DRV8305
 }
 
-
 // Fault status and manager for the DRV8305 -> Datahseet pages 37 and 38
-void faultStatus(){
+void drv_fault_status(){
   static bool faultTrig = false;
   //Read nFault pin from DRV8305 - LOW == error / HIGH == normal operation
   int fault = digitalRead(nFault);

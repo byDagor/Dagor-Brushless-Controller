@@ -4,8 +4,8 @@
 
 // Libraries, pin number assignment and instance initialization
 
-//SimpleFOC Version 2.1
-#include <SimpleFOC.h>
+//SimpleFOC Version 2.3
+//#include <SimpleFOC.h>
 #include <SPI.h>
 
 #ifdef CALIBRATED_SENSOR
@@ -22,12 +22,15 @@
 enum Dagor_state {
   LIFE_IS_GOOD,
   ACTIVE_COMP,
-  SIMPLEFOC_ERROR,
   DRV_WARNING,
-  DRV_FAULT,
   FETS_TEMP_WARNING,
-  FETS_TEMP_FAULT
-} state_machine;
+  MOTOR_TEMP_WARNING,
+  SIMPLEFOC_WARNING,
+  DRV_ERROR,
+  FETS_TEMP_ERROR,
+  MOTOR_TEMP_ERROR,
+  SIMPLEFOC_ERROR
+} state_machine = LIFE_IS_GOOD;
 
 
 //#############_THREE PHASE DRIVER - DRV8305_########
@@ -44,7 +47,7 @@ enum Dagor_state {
 
 //#############_MAGNETIC SENSOR - AS5147_############
 // Datasheet: https://ams.com/documents/20143/36005/AS5147_DS000307_2-00.pdf
-#define sensorCS 16             //AS5147 Chip-select
+#define sensorCS 16             //AS5147 SPI Chip-select
 
 //#############_TEMPERATURE SENSOR - STLM20_#########
 // Datasheet: https://datasheet.lcsc.com/szlcsc/1810010411_STMicroelectronics-STLM20W87F_C129796.pdf
@@ -53,27 +56,15 @@ enum Dagor_state {
 //#############_Voltage Monitor_#####################
 #define vMonitor 33
 
-//#############_TIME MANAGEMENT_#####################
-unsigned long stateT = 0;
-
-//#############_SETUP FUNCTIONS DECLARATION_################
-int SimpleFOCinit(float bus_v);
-void drv_enable();
+//#############_FUNCTIONS DECLARATION_################
+//void drv_enable();
 void spi_init();
 void gpio_init();
 void current_dc_calib(bool activate);
 void calibratePhaseZeroOffset();
-
-//#############_LOOP FUNCTIONS DECLARATION_#################
-unsigned long timeManagement();
+//unsigned long timeManagement();
 void gravityComp();
-//void tempStatus(bool debug = false);  
-void voltageMonitor(bool debug = false);
-void rotorData(bool rotorVelocity = false);
-void faultStatus();
-void phaseCurrents(bool DQspace = false);
-void loopPeriod(bool reset = false);
-void phaseVoltages(bool DQspace = false);
+
 
 //#############_ESP-NOW FUNCTIONS DECLARATION_#############################
 #ifdef ESP_NOW

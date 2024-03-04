@@ -2,14 +2,22 @@
 //               SimpleFOC
 //###########################################
 
-
+// SimpleFOC special parameters, do not change unless you know what you're doing
+const bool focModulation = false;       // Field oriented control modulation type: true -> Sine PWM
+                                        //                                         false -> Space Vector PWM
+const int motionDownSample = 4;         // Downsample the motion control loops with respect to the torque control loop [amount of loops]
+const char motorID = 'M';               // Motor ID used for the commander interface, can be any character 
+#undef   ENCODER                        // define -> ABI interface of magnetic sensor (incremental encoder) 
+                                        // undef  -> SPI interface (absolute rotational position)
+#undef   CALIBRATED_SENSOR              // Run sensor eccentricity calibration on start-up, NOT RECOMMENDED FOR NOW.
+const float sensorOffset = 0.0;         // angular position offset, used to define a new MECHANICAL absolute 0 position on the motor's rotor [rads]
 
 //#############_SIMPLEFOC INSTANCES_#################
-BLDCMotor motor = BLDCMotor(pp, phaseRes);                                              //BLDCMotor instance
+BLDCMotor motor = BLDCMotor(pp);                                                        //BLDCMotor instance
 BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                               //3PWM Driver instance
 
 #ifdef CURRENT_SENSE
-  LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2);       //Current sensing instance
+  LowsideCurrentSense current_sense = LowsideCurrentSense(0.002f, 80.0f, SO1, SO2);     //Current sensing instance
 #endif
 
 #ifdef ENCODER
@@ -25,22 +33,18 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(INHC, INHB, INHA);                       
   CalibratedSensor sensor_calibrated = CalibratedSensor(sensor);          // instantiate the calibrated sensor object
 #endif
 
+
 //#############_COMMANDER INTERFACE_#################
 Commander command = Commander(Serial);
 void onMotor(char* cmd){ command.motor(&motor, cmd); }
 
 #if defined(ESP_NOW) || defined(RS485)
-  Commander commandEspNow = Commander();
-  void onMotorEspNow(char* cmd){ commandEspNow.motor(&motor, cmd); }
+  Commander commandExt = Commander();
 #endif
 
 
-// Initialization of SimpleFOC
-// Do NOT remove the delays in this function.
+// Initialization of SimpleFOC, do NOT remove the delays in this function.
 int SimpleFOCinit(float bus_v){
-
-  Serial.println("DAGOR: Init SimpleFOC");
-  //Motor driver initialization
   
   _delay(500);
 
@@ -49,7 +53,7 @@ int SimpleFOCinit(float bus_v){
     sensor.enableInterrupts(doA, doB);    // Enable interrupts for quadrature signals
     motor.linkSensor(&sensor);            // Link sensor to motor instance  
   #else                                   // Default, SPI interface of magnetic sensor
-    sensor.clock_speed = 1000000;        // Set SPI clock freq. to 10MHz, default is 1MHz
+    sensor.clock_speed = 10000000;        // Set SPI clock freq. to 10MHz, default is 1MHz
     sensor.init();                        // Initialise magnetic sensor hardware
     motor.linkSensor(&sensor);            // Link sensor to motor instance 
   #endif
@@ -68,20 +72,23 @@ int SimpleFOCinit(float bus_v){
   else motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
 
   // set FOC loop to be used: MotionControlType::torque, velocity, angle, velocity_openloop, angle_openloop
-  if (controlType == "C0") motor.controller = MotionControlType::torque;
-  else if (controlType == "C1") motor.controller = MotionControlType::velocity;
-  else if (controlType == "C2") motor.controller = MotionControlType::angle;
-  else if (controlType == "C3") motor.controller = MotionControlType::velocity_openloop;
+  motor.controller = controlType;
+
 
   // link the current sense to the motor
   #ifdef CURRENT_SENSE
     motor.linkCurrentSense(&current_sense);
-    if (trueTorque) motor.torque_controller = TorqueControlType::foc_current;
-    else motor.torque_controller = TorqueControlType::voltage; 
-    motor.voltage_limit = bus_v;
+    if (trueTorque) {
+      motor.torque_controller = TorqueControlType::foc_current;
+      motor.voltage_limit = bus_v;
+    }
+    else {
+      motor.torque_controller = TorqueControlType::voltage; 
+      motor.voltage_limit = amp_limit*phaseRes;
+    }
   #else
     motor.torque_controller = TorqueControlType::voltage; 
-    motor.voltage_limit = bus_v;
+    motor.voltage_limit = amp_limit*phaseRes;
     //motor.phase_resistance = phaseRes;          // Measured phase resistance [ohms]
     //motor.current_limit = maxPowersourceCurrent;
   #endif
@@ -107,7 +114,7 @@ int SimpleFOCinit(float bus_v){
   motor.PID_current_d.output_ramp = voltageRamp;
   motor.LPF_current_d.Tf = lpQDFilter;
 
-  // velocity PI controller parameters
+  // velocity PI controller parameterstorque
   motor.PID_velocity.P = vp;
   motor.PID_velocity.I = vi;
   motor.PID_velocity.D = vd;
@@ -121,7 +128,7 @@ int SimpleFOCinit(float bus_v){
   motor.P_angle.D = ad;
   motor.LPF_angle.Tf = lpPosFilter;       // maximal velocity of the poisition control
   
-  // Position offset, used to define an absolute 0 position [rads]
+  // Position offset, used to define a MECHANICAL absolute 0 position [rads]
   motor.sensor_offset = sensorOffset;
 
   // Downsampling value of the motion control loops with respect to torque loops
@@ -150,11 +157,10 @@ int SimpleFOCinit(float bus_v){
 
   int initFOC_exit_code = -1;
 
-  //if (skipCalibration && natDirection == "CW") initFOC_exit_code =  motor.initFOC(elecOffset,CW);              // start FOC skipping sensor calibration
-  //else if (skipCalibration && natDirection == "CCW") initFOC_exit_code = motor.initFOC(elecOffset,CCW);        // start FOC skipping sensor calibration
-  //else {
-  //  initFOC_exit_code = motor.initFOC();                                                  // align sensor/ encoder and start FOC
-  //}
+  #ifdef SKIP_SENSOR_CALIB
+    motor.zero_electric_angle = zero_elec_angle;
+    motor.sensor_direction = nat_dir;
+  #endif
   
   initFOC_exit_code = motor.initFOC();
 
@@ -162,13 +168,17 @@ int SimpleFOCinit(float bus_v){
     _delay(500);
 
     // define the motor id
-    command.add(motorID, onMotor, " BLDC");
+    command.add(motorID, onMotor, " PMSM");
+    command.add('C', enableActiveComp, " Active Compliance");
+    command.add('H', setNewMechanicalZero, " Set new mechanical Zero");
     if (!commandDebug) command.verbose = VerboseMode::nothing;  
   }
 
   #if defined(ESP_NOW) || defined(RS485)
-      commandEspNow.add(motorID, onMotor, " BLDC");
-      if (!commandDebug) commandEspNow.verbose = VerboseMode::nothing;
+    commandExt.add(motorID, onMotor, " PMSM");
+    commandExt.add('C', enableActiveComp, " Active Compliance");
+    commandExt.add('H', setNewMechanicalZero, " Set new mechanical Zero");
+    if (!commandDebug) commandExt.verbose = VerboseMode::nothing;
   #endif
 
   return initFOC_exit_code;

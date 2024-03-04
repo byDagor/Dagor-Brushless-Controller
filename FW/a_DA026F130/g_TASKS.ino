@@ -1,80 +1,90 @@
 //###########################################
-//       LOOP FUNCTIONS DEFINITIONS
+//             TASKS - Core 0
 //###########################################
 
-// (byte in which to find the 1s, position querying for a 1, binary result of query)
-#define FIND_BIT(X, Y, Z)\        
-  Z = (X>>Y) & 1;
+// Commander callback to enable Active Compliance
+void enableActiveComp(char* cmd){
+  if(atoi(cmd) && motor.controller == MotionControlType::angle) {
+    active_comp_mode = true;
+    Serial.println("Dagor: Active Compliance enabled.");
+  } else {
+    active_comp_mode = false;
+    Serial.println("Dagor: Active Compliance disabled.");
+  }
+}
 
-#define BYTE_CONCATENATE(X, Y, Z)\
-  Z = ((X<<8)+Y);
+// Commander callback to register new mechanical zero, AKA new mechanical home
+void setNewMechanicalZero(char* cmd){
+  if(atoi(cmd) == 1){
+    Serial.print("Defining new Mecahnical zero at: ");
+    Serial.println( sensor.getAngle() );
+    if (motor.sensor_direction == Direction::CW)       motor.sensor_offset =  sensor.getAngle();
+    else if (motor.sensor_direction == Direction::CCW) motor.sensor_offset = -sensor.getAngle();
+  }
+}
 
+// Gravity compensation mode
+void activeComp(){
 
-// Time management for fixed rate functions
-unsigned long timeManagement(){
+  #ifdef CURRENT_SENSE                     // Only works if current sense is available
+    static float holdPosition = 0;         // New calculated target depending on external forces applied to the actuator's output
+    //This inside the void loop
+    if (active_comp_mode && motor.controller == MotionControlType::angle){
+
+      if (motor.current.q > currentQthreshold && abs(motor.shaft_angle - holdPosition) > positionThreshold){
+          holdPosition -= kgc * (motor.current.q - currentQthreshold);
+      }
+      else if (motor.current.q < -currentQthreshold && abs(motor.shaft_angle - holdPosition) > positionThreshold){
+          holdPosition -= kgc * (motor.current.q + currentQthreshold);
+      }
+      //Serial.println(motor.current.q);
+      //Serial.print(", ");
+      //Serial.println(holdPosition);
+      
+      motor.move(holdPosition);
+    }
+  #endif
+
+}
+
+// Function to find the loop time, reports in microseconds. 
+void printFOCfreq(){
+
+  static float monitor_freq = 1; //[Hz]
+
   static unsigned long prevT = 0;
   static unsigned long timeDif = 0;
   static unsigned long runTime = 0;
+  static unsigned long stateT = 0;
 
   runTime = micros();
   timeDif = runTime - prevT;
   prevT = runTime;
-  //stateT += timeDif;
+  stateT += timeDif;
 
-  return timeDif;
-}
+  static unsigned long loopCount = 1;
 
-// Function to find the loop time, reports in microseconds. 
-void loopPeriod(bool reset){
-  static unsigned int loopCount = 1;
+  if (stateT >= 1000000/monitor_freq){
+    
+    float lt = float(stateT)/float(loopCount);    
+    float freq = 1/(lt/1000);
 
-  if (reset){
-    float lt = float(stateT)/float(loopCount);
+    Serial.print(freq);    //[kHz]
+    Serial.println("");
+
     loopCount = 0;
-    //Serial.println("Loop Time: );
-    //Serial.print(", ");
-    Serial.println(lt);
+    stateT = 0;
+    
   }
   else{
     loopCount += 1;
   }
 }
 
-// Gravity compensation mode
-void gravityComp(){
-
-  #ifdef CURRENT_SENSE
-    static float holdPosition = 0;         //moving position depending on external forces applied to the actuator's output
-    //This inside the void loop
-    if (gravityCompMode){
-
-      float ea = motor.electricalAngle();
-      DQCurrent_s current = current_sense.getFOCCurrents(ea);
-    
-      if (current.q > currentQthreshold && abs(sensor.getAngle() - holdPosition) > positionThreshold){
-          holdPosition -= kgc * (current.q - currentQthreshold);
-      }
-      else if (current.q < -currentQthreshold && abs(sensor.getAngle() - holdPosition) > positionThreshold){
-          holdPosition -= kgc * (current.q + currentQthreshold);
-      }
-      //Serial.println(current.q);
-      //Serial.print(", ");
-      //Serial.println}
-
-      (holdPosition);
-      motor.move(holdPosition);
-      
-    }
-    else{
-      motor.move();
-    }
-  #endif
-}
-
-
 // Temperature status and manager  - TODO: Verify temperature formula
-void tempStatus(void *print_temp){
-  bool debug = (bool *)print_temp;
+void tempStatus(void * print_temp){
+
+  bool debug = *((bool *)print_temp);
 
   static float monitor_freq = 4; //[Hz]
   static int tFlag;
@@ -104,7 +114,7 @@ void tempStatus(void *print_temp){
       if(totalTempTime >= overTempTime*1000000){
         tFlag = true;
         digitalWrite(enGate, LOW);
-        Serial.print("[Dagor] enGate Disabled - Temperature protection: ");
+        Serial.print("Dagor: DRV8305 enGate Disabled - Temperature protection: ");
         Serial.println(temp);
       }
       
@@ -120,55 +130,70 @@ void tempStatus(void *print_temp){
 }
 
 // Monitor the voltage of the power source (useful for battery powered devices).
-void voltageMonitor(bool debug){
+void busVoltageMonitor(void * print_voltage){
   
-  float rawVoltage = analogRead(vMonitor);
-  float bVoltage = rawVoltage * 36.3/4095;
+  bool debug = *((bool *)print_voltage);
 
-  if (debug == true){
-    Serial.print("Volate: ");
-    Serial.println(bVoltage,2);
+  static float monitor_freq = 0.5; //[Hz]
+  float update_wait_time = 30; //[s]
+  unsigned int counter = 0;
+  float avg_voltage = 0;
+
+  while(1){
+
+    float rawVoltage = analogRead(vMonitor);
+    float bVoltage = rawVoltage * 36.3/4095;
+
+    avg_voltage += rawVoltage;
+    counter++;
+
+    if (counter >= update_wait_time/(1/monitor_freq)){
+      avg_voltage = avg_voltage/counter;
+      counter = 0;
+
+      // TODO: Update driver voltage with battery voltage
+      //driver.voltage_power_supply = avg_voltage;
+    }
+
+    if (debug == true){
+      Serial.print("Volate: ");
+      Serial.println(bVoltage,2);
+    }
+
+    vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
   }
 }
 
 // Print the rotor position in radians or rotor velocity in radians over second
-void rotorData(bool rotorVelocity){
-  if (rotorVelocity){
-    float e = sensor.getAngle();
-    Serial.print("Rads: ");
-    Serial.print(e,4);  
+void printShaftData(void * no_param){
+
+  static float monitor_freq = 200; //[Hz]
+
+  while(1){
+    Serial.print(motor.shaft_angle,4); 
     Serial.print("\t");  
-  }
-  else{
-    //float e = sensor.getVelocity();
-    float e = sensor.getMechanicalAngle();
-    //Serial.print("Vel: ");
-    Serial.print(e,4); 
-    Serial.print("\t");
+    Serial.print(motor.shaft_velocity,4); 
+
+    vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
   }
 
 }
 
-
-float lag = 0;
-
 // Print each phase current or the current in the DQ space
-void printCurrents(bool DQspace){
+void printCurrents(void * print_type){
+
+  bool DQspace = *((bool *)print_type);
+  static float monitor_freq = 200; //[Hz]
+
+  while(1){
 
   #ifdef CURRENT_SENSE
     if(DQspace){
-      //float current_magnitude = current_sense.getDCCurrent();
-      //Serial.println(current_magnitude); // milli Amps
-
-      //DQCurrent_s current = current_sense.getFOCCurrents(_normalizeAngle( (float)(motor.sensor_direction * motor.pole_pairs) * (sensor.getMechanicalAngle() + lag*sensor.getVelocity())  - motor.zero_electric_angle ));
-
-      //DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle + 0.5*sensor.getMechanicalAngle());
       //DQCurrent_s current = current_sense.getFOCCurrents( _electricalAngle(sensor.getMechanicalAngle() + 0.1*sensor.getVelocity(), motor.pole_pairs) );
-      DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle);
-      Serial.print(current.d);
+      //DQCurrent_s current = current_sense.getFOCCurrents(motor.electrical_angle);
+      Serial.print(motor.current.d);
       Serial.print("\t");
-      Serial.print(current.q);
-      Serial.print("\t"); 
+      Serial.println(motor.current.q);
     }
     else{
       PhaseCurrent_s currents = current_sense.getPhaseCurrents();
@@ -176,30 +201,55 @@ void printCurrents(bool DQspace){
       Serial.print("\t");
       Serial.print(currents.b); // [Amps]
       Serial.print("\t");
-      Serial.print(currents.c); // [Amps]
-      Serial.print("\t");
+      Serial.println(currents.c); // [Amps]
     }
   #else
-    Serial.print("Current sense not initialized.");
+    Serial.println("Current sense not initialized.");
   #endif
+
+  vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
+
+  }
 }
 
 // Print each phase voltage or the equivalent in the DQ space
-void phaseVoltages(bool DQspace){
-  if (DQspace){
-    //DQVoltage_s voltage;
-    Serial.print(motor.voltage.d); // milli Amps
-    Serial.print("\t");
-    Serial.print(motor.voltage.q); // milli Amps
-    Serial.print("\t");
-  }
-  else{
-    Serial.print(motor.Ua); // [volts]
-    Serial.print("\t");
-    Serial.print(motor.Ub); // [volts]
-    Serial.print("\t");
-    Serial.print(motor.Uc); // [volts]
-    Serial.print("\t");
+void printVoltages(void * print_type){
+
+  bool DQspace = *((bool *)print_type);
+  static float monitor_freq = 200; //[Hz]
+
+  while(1){
+
+    if (DQspace){
+      //DQVoltage_s voltage;
+      Serial.print(motor.voltage.d); // milli Amps
+      Serial.print("\t");
+      Serial.print(motor.voltage.q); // milli Amps
+      Serial.print("\t");
+    }
+    else{
+      Serial.print(motor.Ua); // [volts]
+      Serial.print("\t");
+      Serial.print(motor.Ub); // [volts]
+      Serial.print("\t");
+      Serial.print(motor.Uc); // [volts]
+      Serial.print("\t");
+    }
+    vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
   }
 }
 
+void drv_task(void * no_param){
+  static float monitor_freq = 4; //[Hz]
+
+  while(1){
+    drv_fault_status();
+    vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);   
+  }
+
+}
+
+void printStackLeft(){
+  unsigned int stack = uxTaskGetStackHighWaterMark(nullptr);
+    Serial.println(stack);
+}

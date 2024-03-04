@@ -1,7 +1,6 @@
 //###########################################
-//      SETUP FUNCTIONS DEFINITIONS
+//       SETUP FUNCTIONS DEFINITIONS
 //###########################################
-
 
 
 float busVoltage(){
@@ -85,8 +84,63 @@ void taskTempSensor(){
     tempStatus, /* Function to implement the task */
     "Temperature Sensor Monitor", /* Name of the task */
     2048,  /* Stack size in words */
-    (void *)print_temp,  /* Task input parameter */
+    (void*)&print_temp,
+    5,  /* Priority of the task */
+    NULL,  /* Task handle. */
+    0); /* Core where the task should run */
+}
+
+void taskBusVoltage(){
+  xTaskCreatePinnedToCore(
+    busVoltageMonitor, /* Function to implement the task */
+    "Bus Voltage Monitor", /* Name of the task */
+    2048,  /* Stack size in words */
+    (void*)&print_bus_voltage,
+    3,  /* Priority of the task */
+    NULL,  /* Task handle. */
+    0); /* Core where the task should run */
+}
+
+void taskPrintCurrents(){
+  xTaskCreatePinnedToCore(
+    printCurrents, /* Function to implement the task */
+    "Monitor Currents", /* Name of the task */
+    2048,  /* Stack size in words */
+    (void*)&print_dq_currents,  /* Task input parameter */
     0,  /* Priority of the task */
+    NULL,  /* Task handle. */
+    0); /* Core where the task should run */
+}
+
+void taskPrintVoltages(){
+  xTaskCreatePinnedToCore(
+    printVoltages, /* Function to implement the task */
+    "Monitor Voltages", /* Name of the task */
+    2048,  /* Stack size in words */
+    (void*)&print_dq_voltages,  /* Task input parameter */
+    0,  /* Priority of the task */
+    NULL,  /* Task handle. */
+    0); /* Core where the task should run */
+}
+
+void taskShaftData(){
+  xTaskCreatePinnedToCore(
+    printShaftData, /* Function to implement the task */
+    "Shaft Position and Veloity", /* Name of the task */
+    2048,  /* Stack size in words */
+    NULL,
+    0,  /* Priority of the task */
+    NULL,  /* Task handle. */
+    0); /* Core where the task should run */
+}
+
+void taskDRVfault(){
+  xTaskCreatePinnedToCore(
+    drv_task, /* Function to implement the task */
+    "DRV Fault Status", /* Name of the task */
+    2048,  /* Stack size in words */
+    NULL,
+    5,  /* Priority of the task */
     NULL,  /* Task handle. */
     0); /* Core where the task should run */
 }

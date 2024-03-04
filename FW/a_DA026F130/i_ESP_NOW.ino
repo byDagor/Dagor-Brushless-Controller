@@ -54,7 +54,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
           String espNowInput = "M" + String(inputData.act_target_value,3);    // 3 decimenal places for the float
           char wirelessCommand[10]; 
           espNowInput.toCharArray(wirelessCommand, sizeof(wirelessCommand));
-          commandEspNow.run(wirelessCommand);
+          commandExt.run(wirelessCommand);
         }
       }
     }
