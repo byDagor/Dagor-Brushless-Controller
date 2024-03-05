@@ -14,7 +14,7 @@ void loop() {
 
     if (print_foc_freq) printFOCfreq();
 
-    #ifdef MONITORING
+    #ifdef DEBUG_ADAPTER
       command.run();
       //motor.monitor();
     #endif 

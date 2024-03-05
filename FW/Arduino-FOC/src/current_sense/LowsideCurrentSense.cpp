@@ -58,15 +58,13 @@ int LowsideCurrentSense::init(){
 // Function finding zero offsets of the ADC
 void LowsideCurrentSense::calibrateOffsets(){
     SIMPLEFOC_DEBUG("CUR: Calibrating zero offsets!");
-    const int calibration_rounds = 2000;
+    const int calibration_rounds =1000;
 
     // find adc offset = zero current voltage
     offset_ia = 0;
     offset_ib = 0;
     offset_ic = 0;
 
-    // Skipping because I do this outside of sfoc
-    /*
     // read the adc voltage 1000 times ( arbitrary number )
     for (int i = 0; i < calibration_rounds; i++) {
         _startADC3PinConversionLowSide();
@@ -83,7 +81,7 @@ void LowsideCurrentSense::calibrateOffsets(){
     if(_isset(pinA)) SIMPLEFOC_DEBUG("CUR: offset_ia->", offset_ia);
     if(_isset(pinB)) SIMPLEFOC_DEBUG("CUR: offset_ib->", offset_ib);
     if(_isset(pinC)) SIMPLEFOC_DEBUG("CUR: offset_ic->", offset_ic);
-    */
+
 
 }
 
@@ -95,9 +93,6 @@ PhaseCurrent_s LowsideCurrentSense::getPhaseCurrents(){
     current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params) - offset_ib)*gain_b; // amps
     current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params) - offset_ic)*gain_c; // amps
 
-    //current.a = (!_isset(pinA)) ? 0 : (_readADCVoltageLowSide(pinA, params)); // counts
-    //current.b = (!_isset(pinB)) ? 0 : (_readADCVoltageLowSide(pinB, params)); // counts
-    //current.c = (!_isset(pinC)) ? 0 : (_readADCVoltageLowSide(pinC, params)); // counts
     return current;
 }
 

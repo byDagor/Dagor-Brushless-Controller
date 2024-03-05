@@ -171,14 +171,16 @@ int SimpleFOCinit(float bus_v){
     command.add(motorID, onMotor, " PMSM");
     command.add('C', enableActiveComp, " Active Compliance");
     command.add('H', setNewMechanicalZero, " Set new mechanical Zero");
-    if (!commandDebug) command.verbose = VerboseMode::nothing;  
+    #ifndef DEBUG_ADAPTER
+      command.verbose = VerboseMode::nothing;  
+    #endif
   }
 
   #if defined(ESP_NOW) || defined(RS485)
     commandExt.add(motorID, onMotor, " PMSM");
     commandExt.add('C', enableActiveComp, " Active Compliance");
     commandExt.add('H', setNewMechanicalZero, " Set new mechanical Zero");
-    if (!commandDebug) commandExt.verbose = VerboseMode::nothing;
+    if (!ext_command_debug) commandExt.verbose = VerboseMode::nothing;
   #endif
 
   return initFOC_exit_code;

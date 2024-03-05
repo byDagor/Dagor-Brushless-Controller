@@ -21,7 +21,7 @@
 #define _TAKEN_SLOT -21
 
 // ABI bus frequency - would be better to take it from somewhere
-// but I did nto find a good exposed variable
+// but I did not find a good exposed variable
 #define _MCPWM_FREQ 160e6f
 
 // preferred pwm resolution default
@@ -31,7 +31,7 @@
 // max resolution
 #define _PWM_RES_MAX 8000
 // pwm frequency
-#define _PWM_FREQUENCY 25000 // default
+#define _PWM_FREQUENCY 20000 // default
 #define _PWM_FREQUENCY_MAX 50000 // mqx
 
 // structure containing motor slot configuration

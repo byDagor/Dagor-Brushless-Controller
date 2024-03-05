@@ -8,10 +8,11 @@
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
 //TODO:
-//      stall detection
+//      Stall detection algo
 //      Finish RS-485-based protocol
 //      Position control runaway protection
 //      General runaway protection
+//      Virtual Walls algo
 
 //#######_USER SET-UP PARAMETERS_#######
 #define ACT_ID 100                                              // Actuator ID, used for ESP-NOW or RS-485 comms
@@ -54,7 +55,7 @@ const float ap = 5.0;                     // Position control loop PROPORTIONAL 
 const float ai = 0.0;                     // Position control loop INTEGRAL gain value         - AI
 const float ad = 0.30;                    // Position control loop DERIVATIVE gain value       - AD
 const float lpPosFilter = 0.000;          // Position measurment low-pass filter               - AF
-const float voltageRamp = 5000;           // Change in voltage allowed [Volts per sec]         - VR
+const float voltageRamp = 2000;           // Change in voltage allowed [Volts per sec]         - VR
 
 
 //########_ADVANCED PARAMETERS_##########
@@ -77,19 +78,20 @@ const float voltageOverride = 11.1;       // Voltage of your power source [Volts
 const float zero_elec_angle = 0.00;       // Printed as: "MOT: Zero elec. angle: X.XX"
 Direction nat_dir = Direction::CW;        // Can be either CW or CCW
 
-#define  MONITORING                       // define if using monitoring (usb to ttl connected to board)
-bool commandDebug = true;                 // Enable/ disable commander serial print for commander 
+#define DEBUG_ADAPTER                     // define if using USB programming/debug adapter (usb to ttl connected to board)
+                                          // Recommended to disable when adapter will not be connected to computer
 
 const bool print_rotor_data = false;      // Monitor roto's position and velocity (respectively) through the serial terminal
 const bool print_voltages = false;        // Monitor voltages through the serial terminal
-const bool print_dq_voltages = false;     // true-> print DQ voltages, false -> print phase voltages
+const bool print_dq_voltages = false;     // If print_voltage is set to true, then true-> print DQ voltages, false -> print phase voltages
 const bool print_foc_freq = false;        // Monitor FOC current loop bandwidth [Hz]
 
 
 //#######_WIRED/WIRELESS COMMUNICATION_###########
 #undef ESP_NOW                            // define -> enable ESP_NOW
 #undef RS485                              // define -> enable RS-485
-
+const bool ext_command_debug = false;     // Enable/ disable monitoring of inputs from external comms through the USB adapter (serial terminal)
+                                          // Recommended to disable when adapter will not be connected to computer
 
 //#######_ADMITTANCE MODE_#########
 bool active_comp_mode = true;             // Enable active compliance mode at start-up

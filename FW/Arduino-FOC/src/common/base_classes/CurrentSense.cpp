@@ -39,7 +39,7 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
     ABCurrent_s ABcurrent = getABCurrents(current);
 
     // calculate park transform
-    DQCurrent_s return_current = getDQCurrents(ABcurrent, angle_el);
+    DQCurrent_s return_current = getDQCurrents(ABcurrent,angle_el);
 
     return return_current;
 }
