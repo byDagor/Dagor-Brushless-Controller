@@ -19,15 +19,11 @@ void loop() {
       //motor.monitor();
     #endif 
 
-    #ifdef RS485
-      digitalWrite(COMMS_DIR, LOW);
-      checkRS485();
-    #endif
-
-  } else{
-    Serial.print("Error, current state: ");
-    Serial.println();
-    _delay(1000);
+  } 
+  else{
+    Serial.print("Dagor: Error -> State Machine: ");
+    Serial.println(state_machine);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 
 }

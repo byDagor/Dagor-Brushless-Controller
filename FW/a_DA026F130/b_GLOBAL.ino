@@ -29,7 +29,8 @@ enum Dagor_state {
   DRV_ERROR,
   FETS_TEMP_ERROR,
   MOTOR_TEMP_ERROR,
-  SIMPLEFOC_ERROR
+  SIMPLEFOC_ERROR,
+  OUT_BOUNDS_ERROR
 } state_machine = LIFE_IS_GOOD;
 
 

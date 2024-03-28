@@ -8,6 +8,8 @@ void setup() {
   state_machine = LIFE_IS_GOOD;
 
   Serial.println("DAGOR: INIT");
+  Serial.print("DAGOR: FW Version -> ");
+  Serial.println(FW_VERSION);
   Serial.print("DAGOR: ACTUATOR ID -> ");
   Serial.println(ACT_ID);
 
@@ -17,19 +19,12 @@ void setup() {
     _delay(500);
   #endif
  
-  #ifdef RS485
-    Serial1.begin(921600, SERIAL_8N1, UART_RX, UART_TX);
-    myTransfer.begin(Serial1);
-    pinMode(COMMS_DIR, OUTPUT);
-    _delay(100);
-  #endif
-
   gpio_init();
   spi_init();
 
-  delay(200);
-  state_machine = (Dagor_state)drv_init(); 
-  delay(100);
+  _delay(400);
+  state_machine = (Dagor_state)drv_init(false); 
+  _delay(100);
 
   if (state_machine == LIFE_IS_GOOD){
     Serial.println("DAGOR: Init SimpleFOC");
@@ -70,8 +65,16 @@ void setup() {
     taskBusVoltage();
   #endif
 
+  #ifdef MONITOR_ROTOR
+    taskRotorMonitor();
+  #endif
+
+  #ifdef RS485
+    digitalWrite(COMMS_DIR, LOW);
+    taskRS485();
+  #endif
+
   if (print_currents) taskPrintCurrents();
-  if (print_voltages) taskPrintVoltages();
-  if (print_rotor_data) taskShaftData();
+  if (print_voltages) taskPrintVoltages(); 
 
 }

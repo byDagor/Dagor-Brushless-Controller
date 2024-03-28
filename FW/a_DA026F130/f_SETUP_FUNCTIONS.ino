@@ -7,12 +7,14 @@ float busVoltage(){
 
   float bus_v;
 
-  for(int i = 0; i<=50; i++){
+  int loops = 100;
+
+  for(int i = 0; i<=loops; i++){
     //Serial.println(analogRead(vMonitor));
     bus_v += analogRead(vMonitor) * 28.7/4095; //36.3
   }
 
-  bus_v = bus_v/50;
+  bus_v = bus_v/loops;
 
   Serial.print("Dagor: Bus Voltage ->");
   Serial.println(bus_v);
@@ -123,13 +125,13 @@ void taskPrintVoltages(){
     0); /* Core where the task should run */
 }
 
-void taskShaftData(){
+void taskRotorMonitor(){
   xTaskCreatePinnedToCore(
-    printShaftData, /* Function to implement the task */
-    "Shaft Position and Veloity", /* Name of the task */
+    rotorMonitor, /* Function to implement the task */
+    "Rotor Position and Veloity", /* Name of the task */
     2048,  /* Stack size in words */
-    NULL,
-    0,  /* Priority of the task */
+    (void*)&print_rotor_data,
+    2,  /* Priority of the task */
     NULL,  /* Task handle. */
     0); /* Core where the task should run */
 }
@@ -140,7 +142,7 @@ void taskDRVfault(){
     "DRV Fault Status", /* Name of the task */
     2048,  /* Stack size in words */
     NULL,
-    5,  /* Priority of the task */
+    4,  /* Priority of the task */
     NULL,  /* Task handle. */
     0); /* Core where the task should run */
 }

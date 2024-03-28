@@ -1,8 +1,9 @@
 //####################################################################################
-//               Dagor Controller Alpha 2.6 Firmware Version 1.3.0
+//                     Dagor Controller Alpha 2.6 Firmware 
 //####################################################################################
 
 #include <SimpleFOC.h>
+#define FW_VERSION "1.3.0"
 
 // The firmware is separated into 7 tabs (a - g), make sure all files are stored in the folder with the same name as tab a_DAXXXFXXX.
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
@@ -13,6 +14,7 @@
 //      Position control runaway protection
 //      General runaway protection
 //      Virtual Walls algo
+//      Detect DRV warnings vs. errors
 
 //#######_USER SET-UP PARAMETERS_#######
 #define ACT_ID 100                                              // Actuator ID, used for ESP-NOW or RS-485 comms
@@ -64,7 +66,7 @@ const bool print_currents = false;        // Monitor currents through the serial
 const bool print_dq_currents = false;     // true-> print DQ currents, false -> print phase currents
 const bool trueTorque = true;             // Even if using current sense, torque mode can be voltage torque mode if set to false
 
-#undef MONITOR_TEMP                       // define -> monitor and evaluate controllers temperature, parameters below ignored if undef
+#define MONITOR_TEMP                      // define -> monitor and evaluate controllers temperature, parameters below ignored if undef
 const bool print_temp = false;            // Monitor temperature through the serial terminal
 const int maxTemp = 75;                   // Maximum operating temperature of the power-stage [°C]
 const float overTempTime = 1.0;           // Time to elapse in an over-temperature state to disable the controller [seconds]
@@ -72,6 +74,10 @@ const float overTempTime = 1.0;           // Time to elapse in an over-temperatu
 #undef MONITOR_BUS_VOLTAGE                // Monitor bus voltage, automatically adjust to the lowering battery voltage
 const bool print_bus_voltage = false;     // Monitor the bus voltage through the serial terminal
 const float voltageOverride = 11.1;       // Voltage of your power source [Volts], overrides source voltage if MONITOR_BUS_VOLTAGE is undefined
+
+#define MONITOR_ROTOR                     // Monitor rotor position and velocity, parameters below ignored if undef
+const bool print_rotor_data = false;      // Monitor roto's position and velocity (respectively) through the serial terminal
+const float max_rotor_angle = 200;        // Max angle the rotor is allowed to spin to; above +- this value, motor will freewheel [rad]
 
 #undef SKIP_SENSOR_CALIB                  // Skip the position sensor calibration on start-up
                                           // electric angle offset and natural direction printed on start-up
@@ -81,7 +87,6 @@ Direction nat_dir = Direction::CW;        // Can be either CW or CCW
 #define DEBUG_ADAPTER                     // define if using USB programming/debug adapter (usb to ttl connected to board)
                                           // Recommended to disable when adapter will not be connected to computer
 
-const bool print_rotor_data = false;      // Monitor roto's position and velocity (respectively) through the serial terminal
 const bool print_voltages = false;        // Monitor voltages through the serial terminal
 const bool print_dq_voltages = false;     // If print_voltage is set to true, then true-> print DQ voltages, false -> print phase voltages
 const bool print_foc_freq = false;        // Monitor FOC current loop bandwidth [Hz]
@@ -89,15 +94,16 @@ const bool print_foc_freq = false;        // Monitor FOC current loop bandwidth 
 
 //#######_WIRED/WIRELESS COMMUNICATION_###########
 #undef ESP_NOW                            // define -> enable ESP_NOW
-#undef RS485                              // define -> enable RS-485
+#define RS485                             // define -> enable RS-485
 const bool ext_command_debug = false;     // Enable/ disable monitoring of inputs from external comms through the USB adapter (serial terminal)
                                           // Recommended to disable when adapter will not be connected to computer
 
 //#######_ADMITTANCE MODE_#########
-bool active_comp_mode = true;             // Enable active compliance mode at start-up
+bool active_comp_mode = false;             // Enable active compliance mode at start-up
 const float kgc = 0.01;                   // Proportional gain of the gravity compensation controller
 const int currentQthreshold = 0.02;       // Minimum current that defines a force applied on the actuator's output [A]
 const float positionThreshold = 0.014;    // Minimum angular position to move from target to comply (change position to new target) [rad]
+
 
 
 //#######_LIST OF COMMANDER IDs_#######

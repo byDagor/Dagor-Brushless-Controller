@@ -165,15 +165,32 @@ void busVoltageMonitor(void * print_voltage){
 }
 
 // Print the rotor position in radians or rotor velocity in radians over second
-void printShaftData(void * no_param){
+void rotorMonitor(void * print_data){
 
-  static float monitor_freq = 200; //[Hz]
+  static float monitor_freq = 100; //[Hz]
+
+  bool enable = true;
+
+  bool debug = *((bool *)print_data);
 
   while(1){
-    Serial.print(motor.shaft_angle,4); 
-    Serial.print("\t");  
-    Serial.print(motor.shaft_velocity,4); 
 
+    if(abs(motor.shaft_angle)>max_rotor_angle && enable){
+      enable = false;
+      //command.run("ME0");
+      state_machine = OUT_BOUNDS_ERROR;
+      command.run("MC0");
+      command.run("M0");
+      drv_enable(false);
+      Serial.println("Dagor: Disabled, motor position out of bounds.");
+    }
+
+    if(debug){
+      Serial.print(motor.shaft_angle,4); 
+      Serial.print("\t");  
+      Serial.println(motor.shaft_velocity,4); 
+    }
+    
     vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
   }
 

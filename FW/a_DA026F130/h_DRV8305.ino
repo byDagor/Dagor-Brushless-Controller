@@ -11,7 +11,7 @@
 
 
 //Configure DRV8305 to desired operation mode
-int drv_init(){
+int drv_init(bool resp){
   Serial.println("DAGOR: DRV8305 INIT");
 
   //Set to three PWM inputs mode
@@ -22,10 +22,15 @@ int drv_init(){
   //Serial.println(resp1, BIN);
   //Serial.println(resp2, BIN);
 
-  if (resp1 != 0b000010 || resp2 != 0b10010110){
-    Serial.println("Dagor: DRV cannot init.");
-    return DRV_ERROR;
+  if(resp){
+    if (resp1 != 0b000010 || resp2 != 0b10010110){
+      Serial.println(resp1, BIN);
+      Serial.println(resp2, BIN);
+      Serial.println("Dagor: DRV cannot init.");
+      return DRV_ERROR;
+    }
   }
+  
 
   //Clamp sense amplifier output to 3.3V - protect ESP32 adc
   digitalWrite(cs, LOW);
@@ -35,9 +40,13 @@ int drv_init(){
   //Serial.println(resp3, BIN);
   //Serial.println(resp4, BIN);
 
-  if (resp3 != 0b00000100 || resp4 != 0b10100000){
-    Serial.println("Dagor: DRV cannot init.");
-    return DRV_ERROR;
+  if(resp){
+    if (resp3 != 0b00000100 || resp4 != 0b10100000){
+      Serial.println(resp3, BIN);
+      Serial.println(resp4, BIN);
+      Serial.println("Dagor: DRV cannot init.");
+      return DRV_ERROR;
+    }
   }
 
   //Set DRV83045's amplifier gain to 80x
@@ -48,9 +57,13 @@ int drv_init(){
   //Serial.println(resp7, BIN);
   //Serial.println(resp8, BIN);
 
-  if (resp7 != 0b00000000 || resp8 != 0b00111111){
-    Serial.println("Dagor: DRV cannot init.");
-    return DRV_ERROR;
+  if(resp){
+    if (resp7 != 0b00000000 || resp8 != 0b00111111){
+      Serial.println(resp7, BIN);
+      Serial.println(resp8, BIN);
+      Serial.println("Dagor: DRV cannot init.");
+      return DRV_ERROR;
+    }
   }
 
   drv_enable(true);
@@ -101,6 +114,7 @@ void drv_fault_status(){
   int fault = digitalRead(nFault);
   
   if(fault == LOW && faultTrig == false){
+    state_machine = DRV_ERROR; // TODO: select which faults are errors and which are warnings.
     int is_error = 0;
     unsigned int faults = 0;
 
@@ -137,7 +151,7 @@ void drv_fault_status(){
             Serial.println("- Temperature flag setting for approximately 105°C");
             break;
           case 4:
-            Serial.println("- Charge pump undervoltage flag warnin");
+            Serial.println("- Charge pump undervoltage flag warning");
             break;
           case 5:
             Serial.println("- Real time OR of all VDS overcurrent monitors");
