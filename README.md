@@ -16,7 +16,7 @@ The Dagor Controller is a fully integrated tiny solution for brushless-based act
 | Magnetic sensor resolution | 14 bits |
 | Temperature sensor range | -10 ~ 120°C |
 
-> Note: The project is currently on it’s Alpha stage and with the help of the Alpha testers the project will move forward faster.
+> Note: The project is STILL currently on it’s Alpha stage and with the help of the Alpha testers the project will move forward faster.
 
 ## What makes this Controller different?
 The *Dagor Brushless Controller* was designed as a simple platform for hobbyist and students to power brushless-based projects. This board offers wired and wireless connectivity modes to accommodate a variety of different kinds of projects. The firmware for this board was developed for the Arduino development environment and powered by the [SimpleFOC project](simplefoc.com). This code is merely a starting point as it’s encouraged to modify it to fit specific projects. The firmware being very easy to modify and understand gives some key advantages:
@@ -28,6 +28,7 @@ The *Dagor Brushless Controller* was designed as a simple platform for hobbyist 
 
 ## HW Revisions
 | Reivision    | Changes          |
+| ------------- |:-------------:|
 | 2.7 | Solid GND plane, input TVS diode. |
 | 2.6 | Rearrenged the LEDs to avoid bleed, added extra bulk capacitance to the back. |
 
