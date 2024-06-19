@@ -18,8 +18,14 @@ void setNewMechanicalZero(char* cmd){
   if(atoi(cmd) == 1){
     Serial.print("Defining new Mecahnical zero at: ");
     Serial.println( sensor.getAngle() );
-    if (motor.sensor_direction == Direction::CW)       motor.sensor_offset =  sensor.getAngle();
-    else if (motor.sensor_direction == Direction::CCW) motor.sensor_offset = -sensor.getAngle();
+    if (motor.sensor_direction == Direction::CW){
+      motor.sensor_offset =  sensor.getAngle();
+      motor.target = 0;
+    }
+    else if (motor.sensor_direction == Direction::CCW){
+      motor.sensor_offset = -sensor.getAngle();
+      motor.target = 0;
+    }
   }
 }
 
@@ -167,22 +173,22 @@ void busVoltageMonitor(void * print_voltage){
 // Print the rotor position in radians or rotor velocity in radians over second
 void rotorMonitor(void * print_data){
 
-  static float monitor_freq = 100; //[Hz]
+  static float monitor_freq = 50; //[Hz]
 
-  bool enable = true;
+  static bool enable = true;
 
   bool debug = *((bool *)print_data);
 
   while(1){
-
-    if(abs(motor.shaft_angle)>max_rotor_angle && enable){
-      enable = false;
-      //command.run("ME0");
-      state_machine = OUT_BOUNDS_ERROR;
-      command.run("MC0");
-      command.run("M0");
-      drv_enable(false);
-      Serial.println("Dagor: Disabled, motor position out of bounds.");
+  
+    if((motor.shaft_angle>max_rotor_position) || (motor.shaft_angle<min_rotor_position)){
+      //enable = false;
+      //state_machine = OUT_BOUNDS_ERROR;
+      //command.run("MC0");
+      //command.run("M0");
+      //drv_enable(false);
+      motor.disable();
+      Serial.println("MOT: Disabled, motor position out of bounds.");
     }
 
     if(debug){

@@ -47,8 +47,8 @@ void setup() {
     } else { 
       Serial.println("DAGOR: Could not initialize SimpleFOC.");
       state_machine = SIMPLEFOC_ERROR;
-      drv_enable(false);
       drv_fault_status();
+      drv_enable(false);
     }
 
   } else{
@@ -66,11 +66,12 @@ void setup() {
   #endif
 
   #ifdef MONITOR_ROTOR
+    Serial.println("DAGOR: Rotor Monitor Task Enabled.");
     taskRotorMonitor();
   #endif
 
   #ifdef RS485
-    digitalWrite(COMMS_DIR, LOW);
+    Serial.println("DAGOR: RS485 Task Enabled.");
     taskRS485();
   #endif
 

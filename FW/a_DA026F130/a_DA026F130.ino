@@ -1,5 +1,6 @@
 //####################################################################################
-//                     Dagor Controller Alpha 2.6 Firmware 
+//                         Dagor Controller Alpha Firmware
+//                   Compatible with Alpha versions 2.4 and above
 //####################################################################################
 
 #include <SimpleFOC.h>
@@ -8,13 +9,15 @@
 // The firmware is separated into 7 tabs (a - g), make sure all files are stored in the folder with the same name as tab a_DAXXXFXXX.
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
+// Refactoring to use both cores leveraging freeRTOS
 //TODO:
-//      Stall detection algo
-//      Finish RS-485-based protocol
-//      Position control runaway protection
-//      General runaway protection
-//      Virtual Walls algo
-//      Detect DRV warnings vs. errors
+//    Stall detection algorithm
+//    Finish RS-485-based protocol, directional comms working
+//    Virtual Walls algo
+//    Detect DRV warnings vs. errors
+//    Make nicer out of bounds behavior
+//    Finish implementing state machine
+//    Change "H" homing command to accept home as arbitrary number or current position
 
 //#######_USER SET-UP PARAMETERS_#######
 #define ACT_ID 100                                              // Actuator ID, used for ESP-NOW or RS-485 comms
@@ -62,9 +65,9 @@ const float voltageRamp = 2000;           // Change in voltage allowed [Volts pe
 
 //########_ADVANCED PARAMETERS_##########
 #define CURRENT_SENSE                     // Define if using current sense, difference between current control or voltage control mode.  
+const bool trueTorque = true;             // Even if using current sense, torque mode can be voltage torque mode if set to false
 const bool print_currents = false;        // Monitor currents through the serial terminal 
 const bool print_dq_currents = false;     // true-> print DQ currents, false -> print phase currents
-const bool trueTorque = true;             // Even if using current sense, torque mode can be voltage torque mode if set to false
 
 #define MONITOR_TEMP                      // define -> monitor and evaluate controllers temperature, parameters below ignored if undef
 const bool print_temp = false;            // Monitor temperature through the serial terminal
@@ -77,7 +80,8 @@ const float voltageOverride = 11.1;       // Voltage of your power source [Volts
 
 #define MONITOR_ROTOR                     // Monitor rotor position and velocity, parameters below ignored if undef
 const bool print_rotor_data = false;      // Monitor roto's position and velocity (respectively) through the serial terminal
-const float max_rotor_angle = 200;        // Max angle the rotor is allowed to spin to; above +- this value, motor will freewheel [rad]
+const float max_rotor_position = 10;      // Max position [rad] the rotor is allowed to spin to; above this value, motor will freewheel 
+const float min_rotor_position = -150;    // Min position [rad] the rotor is allowed to spin to; below this value, motor will freewheel 
 
 #undef SKIP_SENSOR_CALIB                  // Skip the position sensor calibration on start-up
                                           // electric angle offset and natural direction printed on start-up
@@ -99,7 +103,7 @@ const bool ext_command_debug = false;     // Enable/ disable monitoring of input
                                           // Recommended to disable when adapter will not be connected to computer
 
 //#######_ADMITTANCE MODE_#########
-bool active_comp_mode = false;             // Enable active compliance mode at start-up
+bool active_comp_mode = false;            // Enable active compliance mode at start-up
 const float kgc = 0.01;                   // Proportional gain of the gravity compensation controller
 const int currentQthreshold = 0.02;       // Minimum current that defines a force applied on the actuator's output [A]
 const float positionThreshold = 0.014;    // Minimum angular position to move from target to comply (change position to new target) [rad]

@@ -14,16 +14,24 @@ void loop() {
 
     if (print_foc_freq) printFOCfreq();
 
+    if(!motor.enabled) motor.target = motor.shaft_angle;
+
     #ifdef DEBUG_ADAPTER
       command.run();
       //motor.monitor();
     #endif 
 
-  } 
-  else{
-    Serial.print("Dagor: Error -> State Machine: ");
-    Serial.println(state_machine);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  } else{
+
+    static bool error_printed = false;
+
+    if (!error_printed){
+      error_printed = true;
+      Serial.print("Dagor: Error -> State Machine: ");
+      Serial.println(state_machine);
+    }
+    vTaskDelay(1 / portTICK_PERIOD_MS);
+
   }
 
 }

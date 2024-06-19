@@ -133,7 +133,7 @@ void taskRotorMonitor(){
     (void*)&print_rotor_data,
     2,  /* Priority of the task */
     NULL,  /* Task handle. */
-    0); /* Core where the task should run */
+    1); /* Core where the task should run */
 }
 
 void taskDRVfault(){

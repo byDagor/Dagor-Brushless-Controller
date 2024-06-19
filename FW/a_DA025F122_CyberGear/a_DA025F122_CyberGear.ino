@@ -1,6 +1,6 @@
 
 //####################################################################################
-//      Dagor Controller Alpha 2.5 Firmware Version 1.2.2 for the CyberGear
+//      Dagor Controller Alpha 2.5 Firmware Version 1.2.2
 //####################################################################################
 
 #define LEG_ID 0        // LEG ID number:

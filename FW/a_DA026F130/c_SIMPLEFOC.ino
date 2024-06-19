@@ -181,7 +181,6 @@ int SimpleFOCinit(float bus_v){
     commandExt.add('C', enableActiveComp, " Active Compliance");
     commandExt.add('H', setNewMechanicalZero, " Set new mechanical Zero");
     if (!ext_command_debug) commandExt.verbose = VerboseMode::nothing;
-    commandExt.verbose = VerboseMode::nothing;
   #endif
 
   return initFOC_exit_code;
