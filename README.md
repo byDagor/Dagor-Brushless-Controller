@@ -49,9 +49,6 @@ The *Dagor Brushless Controller* was designed as a simple platform for hobbyist 
 - [ ] OTA Update
 - [ ] Status LED blink patterns
 
-## Dimensions
-
-![dimensions](Images/dagor_dimensions.png)
 
 ## Contact
 david@simplefoc.com 
