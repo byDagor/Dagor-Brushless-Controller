@@ -6,6 +6,8 @@
 #include <SimpleFOC.h>
 #define FW_VERSION "1.3.0"
 
+// Use esp32 core version 2.0.17
+
 // The firmware is separated into 7 tabs (a - g), make sure all files are stored in the folder with the same name as tab a_DAXXXFXXX.
 // This tab cointains the parameters to customize the controller. Learn more at https://docs.dagor.dev/
 
