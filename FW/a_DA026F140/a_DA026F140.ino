@@ -75,6 +75,7 @@ const bool print_dq_currents = false;     // true-> print DQ currents, false -> 
 const bool print_temp = false;            // Monitor temperature through the serial terminal
 const int maxTemp = 75;                   // Maximum operating temperature of the power-stage [°C]
 const float overTempTime = 1.0;           // Time to elapse in an over-temperature state to disable the controller [seconds]
+const float tempMonitorFreq = 4;          // Temperature reading rate [Hz]. The over-temperature timer adds the time between readings, so a lower rate makes a single bad reading count for more
 
 #define MONITOR_BUS_VOLTAGE                // Monitor bus voltage, automatically adjust to the lowering battery voltage
 const bool print_bus_voltage = false;     // Monitor the bus voltage through the serial terminal
@@ -96,6 +97,10 @@ Direction nat_dir = Direction::CW;        // Can be either CW or CCW
 const bool print_voltages = false;        // Monitor voltages through the serial terminal
 const bool print_dq_voltages = false;     // If print_voltage is set to true, then true-> print DQ voltages, false -> print phase voltages
 const bool print_foc_freq = false;       // Monitor FOC current loop bandwidth [Hz]
+
+#undef CURRENT_OUTLIER_TEST               // define -> once per second print how many loop cycles had a phase current far from its running average
+const float outlier_threshold = 0.6;      // Distance from the running average that counts as an outlier in CURRENT_OUTLIER_TEST [A]
+const float outlier_average_filter = 0.001;   // Weight of each new reading in the running average of CURRENT_OUTLIER_TEST
 #undef PROFILE_FOC                        // define -> print the execution time of each FOC section once at the end of start-up
 const int profile_runs = 2000;            // Calls averaged per FOC section by PROFILE_FOC
 const int profile_busy_iterations = 1000; // Length of the fixed CPU work timed by PROFILE_FOC

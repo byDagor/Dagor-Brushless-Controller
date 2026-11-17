@@ -3,13 +3,38 @@
 //###########################################
 
 
+adc_cali_handle_t busAdcCalibration = nullptr;
+
+// Temperature and bus voltage use SimpleFOC's ADC read, analogRead() does not share its lock with the current sense interrupt.
+// Must run before the current sense interrupt starts.
+void adcMonitorInit(){
+  adcInit(vTemp);
+  adcInit(vMonitor);
+
+  adc_cali_line_fitting_config_t calibration = {};
+  calibration.unit_id = ADC_UNIT_1;
+  calibration.atten = ADC_ATTEN_DB_12;
+  calibration.bitwidth = ADC_BITWIDTH_12;
+  if (adc_cali_create_scheme_line_fitting(&calibration, &busAdcCalibration) != ESP_OK){
+    busAdcCalibration = nullptr;
+    Serial.println("Dagor: ADC factory calibration not available, bus voltage is less accurate.");
+  }
+}
+
+// Single bus voltage reading [V]
+float readBusVoltage(){
+  int raw = adcRead(vMonitor);
+  int millivolts = raw * ADC_FULL_SCALE_MV / ADC_MAX_COUNT;
+  if (busAdcCalibration) adc_cali_raw_to_voltage(busAdcCalibration, raw, &millivolts);
+  return millivolts / 1000.0f * BUS_DIVIDER_RATIO;
+}
+
 float busVoltage(){
 
   float bus_v = 0;
 
   for(int i = 0; i < BUS_VOLTAGE_SAMPLES; i++){
-    // Single bus voltage reading [V], uses the ESP32's factory ADC calibration.
-    bus_v += analogReadMilliVolts(vMonitor) / 1000.0f * BUS_DIVIDER_RATIO; 
+    bus_v += readBusVoltage();
   }
 
   bus_v = bus_v/BUS_VOLTAGE_SAMPLES;

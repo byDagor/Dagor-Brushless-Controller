@@ -14,6 +14,10 @@ void loop() {
 
     if (print_foc_freq) printFOCfreq();
 
+    #if defined(CURRENT_OUTLIER_TEST) && defined(CURRENT_SENSE)
+      currentOutlierMonitor();
+    #endif
+
     if(!motor.enabled) motor.target = motor.shaft_angle;
 
     #ifdef DEBUG_ADAPTER

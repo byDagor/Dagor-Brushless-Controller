@@ -115,7 +115,6 @@ void tempStatus(void * print_temp){
 
   bool debug = *((bool *)print_temp);
 
-  static float monitor_freq = 4; //[Hz]
   static int tFlag;
   static unsigned int totalTempTime;
   static unsigned long time_dif = 0, prev_time = 0, now = 0;
@@ -127,7 +126,7 @@ void tempStatus(void * print_temp){
     prev_time = now;
 
     //Read voltage from temperature sensor and transform it to °C
-    float vOut = analogRead(vTemp);
+    float vOut = adcRead(vTemp);
     float temp = (((vOut*3.3f)/4095.0f)-1.8577f)/-0.01177f;
     
     if (debug == true) {
@@ -152,7 +151,7 @@ void tempStatus(void * print_temp){
       totalTempTime = 0;
     }
 
-    vTaskDelay((1000/monitor_freq) / portTICK_PERIOD_MS);
+    vTaskDelay((1000/tempMonitorFreq) / portTICK_PERIOD_MS);
 
   }
   
@@ -170,7 +169,7 @@ void busVoltageMonitor(void * print_voltage){
 
   while(1){
 
-    float bVoltage = analogReadMilliVolts(vMonitor) / 1000.0f * BUS_DIVIDER_RATIO;
+    float bVoltage = readBusVoltage();
 
     voltage_sum += bVoltage;
     counter++;
@@ -299,6 +298,54 @@ void printStackLeft(){
   unsigned int stack = uxTaskGetStackHighWaterMark(nullptr);
     Serial.println(stack);
 }
+
+#if defined(CURRENT_OUTLIER_TEST) && defined(CURRENT_SENSE)
+
+// A bad ADC sample shows up as a phase current far from its running average.
+void currentOutlierMonitor(){
+  static float mean_a = 0, mean_b = 0, max_deviation = 0, sum_squares = 0;
+  static unsigned long samples = 0, outliers = 0, windowStart = 0;
+  static bool started = false;
+
+  PhaseCurrent_s current = current_sense.getPhaseCurrents();
+
+  if (!started){
+    mean_a = current.a;
+    mean_b = current.b;
+    windowStart = micros();
+    started = true;
+  }
+
+  float deviation_a = fabs(current.a - mean_a);
+  float deviation_b = fabs(current.b - mean_b);
+  float deviation = deviation_a > deviation_b ? deviation_a : deviation_b;
+
+  samples++;
+  if (deviation > outlier_threshold) outliers++;
+  if (deviation > max_deviation) max_deviation = deviation;
+  sum_squares += deviation_a * deviation_a + deviation_b * deviation_b;
+
+  mean_a += outlier_average_filter * (current.a - mean_a);
+  mean_b += outlier_average_filter * (current.b - mean_b);
+
+  if (micros() - windowStart >= 1000000){
+    Serial.print("OUTLIERS: cycles ");
+    Serial.print(samples);
+    Serial.print(", outliers ");
+    Serial.print(outliers);
+    Serial.print(", largest deviation [A] ");
+    Serial.print(max_deviation);
+    Serial.print(", rms deviation [A] ");
+    Serial.println(sqrt(sum_squares / (2.0f * samples)), 4);
+    samples = 0;
+    outliers = 0;
+    max_deviation = 0;
+    sum_squares = 0;
+    windowStart = micros();
+  }
+}
+
+#endif
 
 #ifdef PROFILE_FOC
 

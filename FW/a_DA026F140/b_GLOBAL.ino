@@ -7,6 +7,9 @@
 //SimpleFOC Version 2.3
 //#include <SimpleFOC.h>
 #include <SPI.h>
+#include <esp_adc/adc_cali.h>
+#include <esp_adc/adc_cali_scheme.h>
+#include <current_sense/hardware_specific/esp32/esp32_adc_driver.h>   // SimpleFOC's ADC read, the one the current sense interrupt uses
 
 #ifdef ESP_NOW
   #include <esp_now.h>
@@ -53,6 +56,8 @@ enum Dagor_state {
 #define vMonitor 33
 const float BUS_DIVIDER_RATIO = (24000.0f + 3300.0f) / 3300.0f;   // R9 24k / R10 3.3k. The 2.7 schematic says R9 is 33k, the BOM part is 24k
 const int BUS_VOLTAGE_SAMPLES = 100;                              // ADC readings averaged at start-up
+const int ADC_FULL_SCALE_MV = 3300;                               // Uncalibrated ADC range, only used if the factory calibration is not available
+const int ADC_MAX_COUNT = 4095;                                   // 12-bit ADC
 
 //#############_FUNCTIONS DECLARATION_################
 //void drv_enable();

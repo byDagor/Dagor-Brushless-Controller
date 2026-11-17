@@ -26,6 +26,10 @@ void setup() {
   gpio_init();
   spi_init();
 
+  #if defined(MONITOR_TEMP) || defined(MONITOR_BUS_VOLTAGE)
+    adcMonitorInit();
+  #endif
+
   _delay(400);
   state_machine = (Dagor_state)drv_init(false); 
   _delay(100);
