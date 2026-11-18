@@ -10,6 +10,8 @@ void loop() {
     if (updateRequested) enterUpdateMode();
   #endif
 
+  if (imagePending) validateImageWhenHealthy();
+
   if (state_machine < DRV_WARNING){
      // These functions have to run as fast as possible
     motor.loopFOC();

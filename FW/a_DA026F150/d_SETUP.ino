@@ -71,6 +71,8 @@ void setup() {
     Serial.println("Dagor: ERROR - DRV could not init.");
   }
 
+  checkImageAtBoot();
+
   taskDRVfault();
 
   #ifdef MONITOR_TEMP

@@ -27,6 +27,7 @@ volatile bool updateInProgress = false;
 
 // Motor and gate driver off, then restart. The next boot only brings up Wi-Fi and the update service.
 void enterUpdateMode(){
+  validateImage();
   motor.disable();
   digitalWrite(enGate, LOW);
   nvs.putBool(KEY_UPDATE_MODE, true);

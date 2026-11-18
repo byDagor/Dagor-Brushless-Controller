@@ -117,6 +117,7 @@ const bool ext_command_debug = false;     // Enable/ disable monitoring of input
 #define OTA_UPDATE                        // define -> the command U1 (serial, RS-485 or ESP-NOW) restarts the board in update mode: motor and gate driver off, Wi-Fi joined, firmware accepted over the network
 const unsigned long updateWifiTimeoutMs = 30000;     // Time to join the Wi-Fi network in update mode before going back to normal operation [ms]
 const unsigned long updateModeTimeoutMs = 300000;    // Time update mode waits for an upload before going back to normal operation [ms]
+const unsigned long rollbackValidationMs = 15000;    // A firmware image delivered by an update is kept once the board has run this long after start-up [ms], a restart or crash before that goes back to the previous image
                                           // Recommended to disable when adapter will not be connected to computer
 
 //#######_ADMITTANCE MODE_#########

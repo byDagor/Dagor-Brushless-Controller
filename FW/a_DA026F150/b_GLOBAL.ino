@@ -8,6 +8,7 @@
 //#include <SimpleFOC.h>
 #include <SPI.h>
 #include <Preferences.h>
+#include <esp_ota_ops.h>
 
 #ifdef OTA_UPDATE
   #include <WiFi.h>
@@ -41,6 +42,7 @@ enum Dagor_state {
 Preferences nvs;                          // Settings kept in flash, they survive restarts and firmware updates
 int actId = ACT_ID;                       // Actuator ID in use, loaded from nvs at start-up
 volatile bool updateRequested = false;    // Set by the update command, acted on in loop()
+bool imagePending = false;                // True while a firmware image delivered by an update is waiting to be validated
 
 
 //#############_THREE PHASE DRIVER - DRV8305_########
