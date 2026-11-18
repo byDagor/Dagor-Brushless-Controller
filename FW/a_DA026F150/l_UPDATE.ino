@@ -70,32 +70,61 @@ void otaError(int error){
   Serial.println(error);
 }
 
+// Scans, then joins the first stored network (in storage order) that is in range. If joining one fails,
+// the next stored network in range is tried.
+bool joinKnownNetwork(){
+  int found = WiFi.scanNetworks();
+
+  for (int network = 0; network < WIFI_NETWORKS_MAX; network++){
+    String ssid = nvs.getString(wifiKey(KEY_WIFI_SSID, network).c_str(), "");
+    if (ssid.length() == 0) continue;
+
+    bool inRange = false;
+    for (int i = 0; i < found; i++){
+      if (WiFi.SSID(i) == ssid) inRange = true;
+    }
+    if (!inRange) continue;
+
+    String password = nvs.getString(wifiKey(KEY_WIFI_PASSWORD, network).c_str(), "");
+    WiFi.begin(ssid.c_str(), password.c_str());
+
+    unsigned long wifiStart = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - wifiStart < updateWifiTimeoutMs){
+      delay(100);
+    }
+
+    if (WiFi.status() == WL_CONNECTED){
+      Serial.print("DAGOR: Joined Wi-Fi network ");
+      Serial.println(network + 1);
+      WiFi.scanDelete();
+      return true;
+    }
+    WiFi.disconnect();
+  }
+
+  WiFi.scanDelete();
+  return false;
+}
+
 // Runs from setup() when the update flag is set and never returns: the board restarts after an update,
 // when something is missing, or when the timeout expires. No motor, driver or comms code is started.
 void runUpdateMode(){
   gpio_init();
   Serial.println("DAGOR: Update mode.");
 
-  String ssid = nvs.getString(KEY_WIFI_SSID, "");
-  String wifiPassword = nvs.getString(KEY_WIFI_PASSWORD, "");
   String updatePassword = nvs.getString(KEY_UPDATE_PASSWORD, "");
 
-  if (ssid.length() == 0 || updatePassword.length() == 0){
+  if (!anyNetworkStored() || updatePassword.length() == 0){
     Serial.println("DAGOR: No Wi-Fi network or update password stored, back to normal operation.");
     ESP.restart();
   }
 
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid.c_str(), wifiPassword.c_str());
 
-  unsigned long wifiStart = millis();
-  while (WiFi.status() != WL_CONNECTED){
-    if (millis() - wifiStart > updateWifiTimeoutMs){
-      Serial.println("DAGOR: Could not join the Wi-Fi network, back to normal operation.");
-      ESP.restart();
-    }
-    delay(100);
+  if (!joinKnownNetwork()){
+    Serial.println("DAGOR: Could not join any stored Wi-Fi network, back to normal operation.");
+    ESP.restart();
   }
 
   String hostname = "dagor-" + String(actId);
