@@ -1,2 +1,1 @@
-Firmware requires to use the SimpleFOC version located here. 
-Future development of the FW and SimpleFOC will allow to use the vanilla library, for now this is a patch. 
+The firmware uses the vanilla SimpleFOC library, version 2.4.0. No patched version is needed.
