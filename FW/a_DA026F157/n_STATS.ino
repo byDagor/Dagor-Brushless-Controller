@@ -6,9 +6,9 @@
 // the time has passed. Nothing is stored, nothing else is printed, so the measurement does not disturb the control loop.
 //   Q2        quiet hold: nothing moves. Mean and standard deviation of angle, velocity, iq and uq. The standard deviations are the
 //             regression numbers, they must not grow between builds.
-//   Q2.5,0.05 position step of 0.05 rad after 0.3 s (at most statsMaxStep): rise time 10 to 90 %, overshoot, settling time (5 % band),
-//             steady state error, peak iq. Only with someone at the bench, the motor moves.
-const float statsMaxStep = 0.05;                // Largest step the command accepts [rad]
+//   Q6,3.1416 position step of pi rad after 0.3 s (at most statsMaxStep): rise time 10 to 90 %, overshoot, settling time (5 % band),
+//             steady state error, peak iq. Only with someone at the bench, the motor moves, and it moves back after the measurement.
+const float statsMaxStep = 3.2;                 // Largest step the command accepts [rad], a half turn is the usual test
 const int64_t statsStepAtUs = 300000;           // The step is applied this long after the start [us]
 const int64_t statsBaselineUs = 250000;         // Angle averaged over this long before the step [us]
 const int64_t statsFinalUs = 250000;            // Steady state averaged over this long at the end [us]
@@ -118,7 +118,7 @@ void onStatsCommand(char* cmd){
   if (seconds > 10) seconds = 10;
   if (step != 0){
     if (!isAngleControl()){ Serial.println("QSTAT: a step needs angle control"); return; }
-    if (fabsf(step) > statsMaxStep){ Serial.println("QSTAT: the step must not exceed 0.05 rad"); return; }
+    if (fabsf(step) > statsMaxStep){ Serial.print("QSTAT: the step must not exceed "); Serial.print(statsMaxStep, 1); Serial.println(" rad"); return; }
     if (seconds < 1.0f) seconds = 1.0f;
   }
   statsSumA = statsSumA2 = statsSumV = statsSumV2 = statsSumI = statsSumI2 = statsSumU = statsSumU2 = 0;
