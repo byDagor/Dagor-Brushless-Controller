@@ -3,7 +3,7 @@
 //###########################################
 // The chip is driven by the DRV8305Driver3PWM library class. The instance "driver" is declared in tab c.
 
-#include "drv8305_status.h"
+#include "src/drv8305_status.h"
 
 // Overcurrent trip of the DRV8305 VDS monitor. It protects the MOSFETs and the board, it is not the motor current limit (amp_limit).
 // The chip trips at this voltage divided by RDS(on). TPH4R008NH: 4.0 mohm max at 25 C, about 6.4 mohm hot,
@@ -68,6 +68,24 @@ void drvPrintStatus(const uint16_t* status, bool warnings){
   }
 }
 
+// Reason bits for the status words (dagor_state.h). Registers 0x2 (VDS) and 0x4 (VGS) hold the faults that stay until the chip is
+// reset, register 0x3 the supply and temperature faults that clear by themselves, its bit 9 is the chip watchdog.
+const uint16_t DRV_WATCHDOG_FAULT = 1 << 9;
+const uint16_t DRV_TEMPERATURE_FLAGS = (1 << 1) | (1 << 2) | (1 << 3) | (1 << 8);   // register 0x1: 135, 125, 105 and 175 degC
+
+void drvRaiseFaultBits(const uint16_t* status){
+  bool known = false;
+  if (status[1] || status[3]){ raiseFault(F_DRV_LATCHED); known = true; }
+  if (status[2] & DRV_WATCHDOG_FAULT){ raiseFault(F_DRV_WATCHDOG); known = true; }
+  if (status[2] & ~DRV_WATCHDOG_FAULT & DRV_ALL_BITS){ raiseFault(F_DRV_AUTO); known = true; }
+  if (!known) raiseFault(drvStatusLooksValid(status) ? F_DRV_AUTO : F_DRV_NO_ANSWER);   // only the fault flag, or the chip did not answer
+}
+
+void drvSetWarningBits(uint16_t warningRegister){
+  if (warningRegister & DRV_TEMPERATURE_FLAGS) raiseWarning(W_DRV_TEMP); else clearWarning(W_DRV_TEMP);
+  if (warningRegister & DRV_WARNING_BITS & ~DRV_TEMPERATURE_FLAGS) raiseWarning(W_DRV_FLAGS); else clearWarning(W_DRV_FLAGS);
+}
+
 // Fault and warning monitor of the DRV8305, called by the DRV task. Datasheet section 7.3.8.1:
 // a warning is report only, the chip takes no action and pulses nFAULT until a status register is read.
 // A fault shuts the gate drivers down, holds nFAULT low and stays latched.
@@ -77,6 +95,8 @@ void drv_fault_status(){
   DRV8305_FaultPin pin = driver.getFaultPin();    // sample the pin before the status read, that read ends a warning pulse train
   if (pin == DRV8305_FaultPin::Idle){
     faultReported = false;
+    clearWarning(W_DRV_FLAGS);
+    clearWarning(W_DRV_TEMP);
     return;
   }
   if (pin == DRV8305_FaultPin::Fault && faultReported) return;
@@ -92,6 +112,8 @@ void drv_fault_status(){
 
   if (pin == DRV8305_FaultPin::Fault || (status[0] & DRV_FAULT_FLAG)){
     driver.disableGate();   // a real fault already switched the outputs off, this also covers a chip that stopped answering
+    drvRaiseFaultBits(status);
+    drvSetWarningBits(status[0]);
     state_machine = DRV_ERROR;
     faultReported = true;
     Serial.println("DRV8305: Fault ->");
@@ -101,6 +123,7 @@ void drv_fault_status(){
       drvPrintStatus(status, true);
     }
   } else {
+    drvSetWarningBits(status[0]);
     Serial.println("DRV8305: Warning ->");
     drvPrintStatus(status, true);
   }
@@ -112,6 +135,7 @@ void drv_config_monitor(){
   if (state_machine >= DRV_ERROR || drvSettingsOk()) return;
 
   driver.disableGate();
+  raiseFault(F_DRV_SETTINGS_LOST);
   state_machine = DRV_ERROR;
   Serial.println("DRV8305: Configuration lost, the chip reset to its defaults (supply dip?). Gate driver off, restart the controller.");
 }

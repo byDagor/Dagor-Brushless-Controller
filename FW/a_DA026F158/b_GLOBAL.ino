@@ -8,8 +8,11 @@
 //#include <SimpleFOC.h>
 #include <SPI.h>
 #include <soc/gpio_struct.h>          // GPIO register access for the encoder read
+#include <esp_cpu.h>                  // Inline CPU cycle counter, usable from IRAM code
+#include <current_sense/hardware_specific/esp32/esp32_mcu.h>   // Parameters the current sense interrupt writes, to see when a pair of samples is complete
 #include <Preferences.h>
 #include <esp_ota_ops.h>
+#include "src/dagor_state.h"            // Status words and reason codes
 
 #ifdef OTA_UPDATE
   #include <WiFi.h>
@@ -40,6 +43,23 @@ enum Dagor_state {
   OUT_BOUNDS_ERROR
 } state_machine = LIFE_IS_GOOD;
 
+// The control loop runs from IRAM, not from flash through the cache. The cache is shared with the 20 kHz current sense interrupt, and
+// with the code in flash the loop rate depended on where each function happened to land (7.8 to 17.2 kHz for the same code).
+#define FOC_HOT IRAM_ATTR
+bool activeComp();                      // Declared here, the sketch prototype generator does not see it through the attribute
+void waitForCurrentSamples();           // Same
+
+volatile uint32_t loopIterations = 0;   // Control loop iterations since start, read by the loop rate command
+const volatile int* currentSampleIndex = nullptr;   // Index of the phase the current sense interrupt samples next, null when the loop is not locked to it
+volatile bool statsActive = false;       // The Q command is collecting hold statistics
+volatile uint32_t loopLateStarts = 0;   // Iterations that started after their slot, because the previous one ran too long
+volatile uint32_t loopLockLosses = 0;   // Times the lock to the current samples was lost
+volatile uint32_t loopTimeouts = 0;     // Times the wait for a sample pair gave up
+volatile uint32_t commandCount = 0;     // Commands received, shown by the L command (L itself is not counted)
+char lastCommand[8] = "none";           // The last command, its letter and the first five characters of its argument
+uint32_t lastCommandAtS = 0;            // Uptime when it arrived [s]
+float bootTarget = 0;                   // The hold target set at start-up, to see later whether it was changed
+void noteCommand(char id, const char* argument);
 Preferences nvs;                          // Settings kept in flash, they survive restarts and firmware updates
 int actId = ACT_ID;                       // Actuator ID in use, loaded from nvs at start-up
 volatile bool updateRequested = false;    // Set by the update command, acted on in loop()

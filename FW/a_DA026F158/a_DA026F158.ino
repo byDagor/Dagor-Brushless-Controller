@@ -6,7 +6,7 @@
 #include <SimpleFOC.h>
 #include <SimpleFOCDrivers.h>
 #include "drivers/drv8305/drv8305.h"   // DRV8305 driver. Keep it above the pin macros of tab b: cs, enGate and nFault are also member names in the library
-#define FW_VERSION "1.5.4"
+#define FW_VERSION "1.5.8"
 
 // Use esp32 core version 3.3.12 and SimpleFOC 2.4.0
 
@@ -103,6 +103,7 @@ const bool print_foc_freq = false;       // Monitor FOC current loop bandwidth [
 #undef CURRENT_OUTLIER_TEST               // define -> once per second print how many loop cycles had a phase current far from its running average
 const float outlier_threshold = 0.6;      // Distance from the running average that counts as an outlier in CURRENT_OUTLIER_TEST [A]
 const float outlier_average_filter = 0.001;   // Weight of each new reading in the running average of CURRENT_OUTLIER_TEST
+#undef DEBUG_INJECT                      // define -> adds the J command that sets reason bits for tests, leave it undefined in a shipping build
 #undef PROFILE_FOC                        // define -> print the execution time of each FOC section once at the end of start-up
 const int profile_runs = 2000;            // Calls averaged per FOC section by PROFILE_FOC
 const int profile_busy_iterations = 1000; // Length of the fixed CPU work timed by PROFILE_FOC

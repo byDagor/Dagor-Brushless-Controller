@@ -9,6 +9,11 @@ const int motionDownSample = 4;         // Downsample the motion control loops w
 const float pwmFrequency = 20000;       // Power-stage PWM frequency [Hz]
 const float svpwmVoltageFactor = _1_SQRT3;      // Largest undistorted phase voltage amplitude, as a fraction of the driver voltage limit, for Space Vector PWM
 const float sinePwmVoltageFactor = 0.5;         // Same, for Sine PWM
+const bool lockLoopToCurrentSamples = true;     // Start each loop iteration right after a pair of current samples completes: a fixed 10 kHz at 20 kHz PWM
+const uint32_t cpuCyclesPerUs = 240;            // CPU clock [MHz], the loop is timed with the CPU cycle counter
+const uint32_t currentPairCycles = uint32_t(2000000.0f / pwmFrequency * cpuCyclesPerUs);   // Time between two complete pairs of current samples: two PWM periods [CPU cycles]
+const uint32_t currentPairGraceCycles = 3000;   // How long a late sample interrupt is waited for [CPU cycles] (12.5 us)
+const uint32_t loopTimeoutCycles = 30000;       // Longest wait for the samples [CPU cycles] (125 us = 8 kHz, the minimum loop rate)
 const uint8_t commandPollDivider = 32;          // The serial command interface is polled once every this many loop iterations
 const uint32_t sensorCsSetupCycles = 100;       // Wait between chip select falling and the first clock edge in CPU cycles at 240 MHz (0.42 us), the AS5147 needs 350 ns
 const uint32_t sensorFrameGapCycles = 120;      // Wait between the two AS5147 SPI frames in CPU cycles at 240 MHz (0.5 us), the chip needs 350 ns of CSn high time
@@ -51,7 +56,26 @@ DRV8305Driver3PWM driver = DRV8305Driver3PWM(INHC, INHB, INHA, cs, enGate, nFaul
 
       // The bus lock is the one the DRV8305 task takes in its transactions, so the two cannot overlap. The bus clock register is checked
       // on every read: if the DRV8305 task has set its own clock, the full Arduino transaction sets the encoder's again.
-      float getSensorAngle() override {
+      float getSensorAngle() override;
+
+    private:
+      int csPin;
+      uint32_t csMask = 0;
+      uint32_t encoderClockDiv = 0;   // Bus clock register as the encoder needs it, 0 until the first read
+      float lastAngle = 0;
+
+      // The read as the Arduino SPI class does it, all inside one transaction. It also leaves the bus set for the encoder,
+      // and remembers the clock register so the next reads can take the short path.
+      float readWithFullTransaction();
+
+      // Inline cycle counter: ESP.getCycleCount() is a function in flash and would pull the cache back into the IRAM read
+      static inline __attribute__((always_inline)) void waitCycles(uint32_t cycles){
+        uint32_t start = esp_cpu_get_cycle_count();
+        while (esp_cpu_get_cycle_count() - start < cycles);
+      }
+  };
+
+  float FOC_HOT DagorAS5147::getSensorAngle(){
         spi_t* bus = SPI.bus();
         spiSimpleTransaction(bus);
         if (spiGetClockDiv(bus) != encoderClockDiv){
@@ -72,17 +96,9 @@ DRV8305Driver3PWM driver = DRV8305Driver3PWM(INHC, INHB, INHA, cs, enGate, nFaul
         if (response == 0x0000) return lastAngle;
         lastAngle = ((response & as5147DataMask) / as5147CountsPerRev) * _2PI;
         return lastAngle;
-      }
+  }
 
-    private:
-      int csPin;
-      uint32_t csMask = 0;
-      uint32_t encoderClockDiv = 0;   // Bus clock register as the encoder needs it, 0 until the first read
-      float lastAngle = 0;
-
-      // The read as the Arduino SPI class does it, all inside one transaction. It also leaves the bus set for the encoder,
-      // and remembers the clock register so the next reads can take the short path.
-      float readWithFullTransaction(){
+  float FOC_HOT DagorAS5147::readWithFullTransaction(){
         csMask = 1UL << csPin;
         SPI.beginTransaction(SPISettings(clock_speed, MSBFIRST, spi_mode));
         encoderClockDiv = spiGetClockDiv(SPI.bus());
@@ -96,13 +112,7 @@ DRV8305Driver3PWM driver = DRV8305Driver3PWM(INHC, INHB, INHA, cs, enGate, nFaul
         SPI.endTransaction();
         lastAngle = ((response & as5147DataMask) / as5147CountsPerRev) * _2PI;
         return lastAngle;
-      }
-
-      static inline void waitCycles(uint32_t cycles){
-        uint32_t start = ESP.getCycleCount();
-        while (ESP.getCycleCount() - start < cycles);
-      }
-  };
+  }
 
   DagorAS5147 sensor = DagorAS5147(sensorCS);                             //SPI Magnetic sensor instance
 #endif
@@ -115,7 +125,7 @@ DRV8305Driver3PWM driver = DRV8305Driver3PWM(INHC, INHB, INHA, cs, enGate, nFaul
 //#############_COMMANDER INTERFACE_#################
 Commander command = Commander(Serial);
 Commander commandSystem = Commander(Serial);   // Only the system commands, still read after an error when the motor commands are not
-void onMotor(char* cmd){ command.motor(&motor, cmd); }
+void onMotor(char* cmd){ noteCommand('M', cmd); command.motor(&motor, cmd); }
 
 #if defined(ESP_NOW) || defined(RS485)
   Commander commandExt = Commander();
@@ -239,6 +249,7 @@ int SimpleFOCinit(float bus_v){
     current_sense.init();                           // current sense init hardware
     motor.linkCurrentSense(&current_sense);         // link motor and current sense
     current_sense.skip_align = true;                // skip alignment procedure
+    if (lockLoopToCurrentSamples && current_sense.params) currentSampleIndex = &((ESP32CurrentSenseParams*)current_sense.params)->buffer_index;
     #ifdef PROFILE_FOC
       profileBusyReport("busy work after current_sense.init");
     #endif
@@ -266,6 +277,7 @@ int SimpleFOCinit(float bus_v){
     // The target is 0 after boot, hold the current position instead of driving to it.
     motor.sensor->update();
     motor.target = motor.shaftAngle();
+    bootTarget = motor.target;
 
     _delay(500);
 
@@ -273,6 +285,8 @@ int SimpleFOCinit(float bus_v){
     command.add(motorID, onMotor, " PMSM");
     command.add('C', enableActiveComp, " Active Compliance");
     command.add('H', setNewMechanicalZero, " Set new mechanical Zero");
+    command.add('L', printLoopRate, " Loop rate");
+    command.add('Q', onStatsCommand, " Hold statistics");
     //#ifndef DEBUG_ADAPTER
       if (!ext_command_debug) command.verbose = VerboseMode::nothing;  
     //#endif
@@ -288,3 +302,76 @@ int SimpleFOCinit(float bus_v){
   return initFOC_exit_code;
 }
 
+
+// ---- Motor helpers: control mode, active compliance, mechanical zero ----
+
+bool isAngleControl(){
+  return motor.controller == MotionControlType::angle || motor.controller == MotionControlType::angle_nocascade;
+}
+
+// Commander callback to enable Active Compliance
+void enableActiveComp(char* cmd){
+  noteCommand('C', cmd);
+  if(atoi(cmd) && isAngleControl()) {
+    active_comp_mode = true;
+    Serial.println("Dagor: Active Compliance enabled.");
+  } else {
+    active_comp_mode = false;
+    Serial.println("Dagor: Active Compliance disabled.");
+  }
+}
+
+// Commander callback to register new mechanical zero, AKA new mechanical home
+void setNewMechanicalZero(char* cmd){
+  noteCommand('H', cmd);
+  if(atoi(cmd) == 1){
+    Serial.print("Defining new Mecahnical zero at: ");
+    Serial.println( sensor.getAngle() );
+    if (motor.sensor_direction == Direction::CW){
+      motor.sensor_offset =  sensor.getAngle();
+      motor.target = 0;
+    }
+    else if (motor.sensor_direction == Direction::CCW){
+      motor.sensor_offset = -sensor.getAngle();
+      motor.target = 0;
+    }
+  }
+}
+
+// Gravity compensation mode. Returns true if it already ran motor.move() this cycle.
+bool FOC_HOT activeComp(){
+
+  #ifdef CURRENT_SENSE                     // Only works if current sense is available
+    static float holdPosition = 0;         // New calculated target depending on external forces applied to the actuator's output
+    static bool wasActive = false;
+
+    if (active_comp_mode && isAngleControl()){
+
+      if (!wasActive){
+        holdPosition = motor.shaft_angle;
+        wasActive = true;
+      }
+
+      if (motor.current.q > currentQthreshold && abs(motor.shaft_angle - holdPosition) > positionThreshold){
+          holdPosition -= kgc * (motor.current.q - currentQthreshold);
+      }
+      else if (motor.current.q < -currentQthreshold && abs(motor.shaft_angle - holdPosition) > positionThreshold){
+          holdPosition -= kgc * (motor.current.q + currentQthreshold);
+      }
+      //Serial.println(motor.current.q);
+      //Serial.print(", ");
+      //Serial.println(holdPosition);
+
+      motor.move(holdPosition);
+      return true;
+    }
+
+    // Normal control resumes from the last hold position instead of the pre-compliance target.
+    if (wasActive){
+      motor.target = holdPosition;
+      wasActive = false;
+    }
+  #endif
+
+  return false;
+}

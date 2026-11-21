@@ -74,6 +74,7 @@ bool addressedToThisBoard(int id, char firstCommand){
 
 // Serial command I<id>
 void setActuatorId(char* cmd){
+  noteCommand('I', cmd);
   int id = atoi(cmd);
   if (id <= ACT_ID_BROADCAST || id > ACT_ID_MAX){
     Serial.println("DAGOR: Actuator ID must be between 1 and 65535.");
@@ -87,6 +88,7 @@ void setActuatorId(char* cmd){
 
 // Serial command W1
 void storeCredentialsCommand(char* cmd){
+  noteCommand('W', "");   // the argument holds a password, it is never stored
   #ifdef HAS_DEFAULT_CREDENTIALS
     if (atoi(cmd) != 1) return;
     storeDefaultCredentials(true);

@@ -55,6 +55,7 @@ void setup() {
       state_machine = LIFE_IS_GOOD;
     } else { 
       Serial.println("DAGOR: Could not initialize SimpleFOC.");
+      raiseFault(F_SIMPLEFOC_INIT);
       state_machine = SIMPLEFOC_ERROR;
       drv_fault_status();
       drv_enable(false);
@@ -92,3 +93,73 @@ void setup() {
   #endif
 
 }
+
+//###########################################
+//       SETUP FUNCTIONS DEFINITIONS
+//###########################################
+
+
+adc_cali_handle_t busAdcCalibration = nullptr;
+
+// Temperature and bus voltage use SimpleFOC's ADC read, analogRead() does not share its lock with the current sense interrupt.
+// Must run before the current sense interrupt starts.
+void adcMonitorInit(){
+  adcInit(vTemp);
+  adcInit(vMonitor);
+
+  adc_cali_line_fitting_config_t calibration = {};
+  calibration.unit_id = ADC_UNIT_1;
+  calibration.atten = ADC_ATTEN_DB_12;
+  calibration.bitwidth = ADC_BITWIDTH_12;
+  if (adc_cali_create_scheme_line_fitting(&calibration, &busAdcCalibration) != ESP_OK){
+    busAdcCalibration = nullptr;
+    Serial.println("Dagor: ADC factory calibration not available, bus voltage is less accurate.");
+  }
+}
+
+// Single bus voltage reading [V]
+float readBusVoltage(){
+  int raw = adcRead(vMonitor);
+  int millivolts = raw * ADC_FULL_SCALE_MV / ADC_MAX_COUNT;
+  if (busAdcCalibration) adc_cali_raw_to_voltage(busAdcCalibration, raw, &millivolts);
+  return millivolts / 1000.0f * BUS_DIVIDER_RATIO;
+}
+
+float busVoltage(){
+
+  float bus_v = 0;
+
+  for(int i = 0; i < BUS_VOLTAGE_SAMPLES; i++){
+    bus_v += readBusVoltage();
+  }
+
+  bus_v = bus_v/BUS_VOLTAGE_SAMPLES;
+
+  Serial.print("Dagor: Bus Voltage ->");
+  Serial.println(bus_v);
+  
+  return bus_v;
+
+}
+
+void spi_init(){
+  //SPI start up
+  pinMode(cs, OUTPUT);
+  digitalWrite(cs, HIGH);
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE1);
+}
+
+void gpio_init(){
+  //Pinmodes assignment
+  pinMode(15,OUTPUT);
+  digitalWrite(15,HIGH);
+  pinMode(SO1, INPUT);
+  pinMode(SO2, INPUT);
+  pinMode(SO3, INPUT);
+  pinMode(nFault, INPUT);
+  pinMode(enGate, OUTPUT);
+  digitalWrite(enGate, LOW);
+}
+
