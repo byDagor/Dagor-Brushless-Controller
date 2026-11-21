@@ -8,6 +8,7 @@ bool isAngleControl(){
 
 // Commander callback to enable Active Compliance
 void enableActiveComp(char* cmd){
+  noteCommand('C', cmd);
   if(atoi(cmd) && isAngleControl()) {
     active_comp_mode = true;
     Serial.println("Dagor: Active Compliance enabled.");
@@ -19,6 +20,7 @@ void enableActiveComp(char* cmd){
 
 // Commander callback to register new mechanical zero, AKA new mechanical home
 void setNewMechanicalZero(char* cmd){
+  noteCommand('H', cmd);
   if(atoi(cmd) == 1){
     Serial.print("Defining new Mecahnical zero at: ");
     Serial.println( sensor.getAngle() );

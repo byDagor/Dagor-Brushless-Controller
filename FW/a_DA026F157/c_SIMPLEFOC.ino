@@ -125,7 +125,7 @@ DRV8305Driver3PWM driver = DRV8305Driver3PWM(INHC, INHB, INHA, cs, enGate, nFaul
 //#############_COMMANDER INTERFACE_#################
 Commander command = Commander(Serial);
 Commander commandSystem = Commander(Serial);   // Only the system commands, still read after an error when the motor commands are not
-void onMotor(char* cmd){ command.motor(&motor, cmd); }
+void onMotor(char* cmd){ noteCommand('M', cmd); command.motor(&motor, cmd); }
 
 #if defined(ESP_NOW) || defined(RS485)
   Commander commandExt = Commander();
@@ -277,6 +277,7 @@ int SimpleFOCinit(float bus_v){
     // The target is 0 after boot, hold the current position instead of driving to it.
     motor.sensor->update();
     motor.target = motor.shaftAngle();
+    bootTarget = motor.target;
 
     _delay(500);
 

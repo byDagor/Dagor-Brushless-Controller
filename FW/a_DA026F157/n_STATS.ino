@@ -73,6 +73,7 @@ static void printStat(const char* name, float sum, float sum2, uint32_t n){
 }
 
 void onStatsCommand(char* cmd){
+  noteCommand('Q', cmd);
   bool hasArgument = cmd[0] != 0 && cmd[0] != '\r' && cmd[0] != '\n' && cmd[0] != ' ';
   if (!hasArgument){
     // A bare Q reads the result of the last measurement

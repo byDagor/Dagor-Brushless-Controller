@@ -5,6 +5,7 @@
 // Commander callback of the update command, U1. It only raises a flag: the restart happens in loop(),
 // not inside a comms callback.
 void onUpdateCommand(char* cmd){
+  noteCommand('U', cmd);
   if (atoi(cmd) == 1) updateRequested = true;
 }
 

@@ -54,6 +54,11 @@ volatile bool statsActive = false;       // The Q command is collecting hold sta
 volatile uint32_t loopLateStarts = 0;   // Iterations that started after their slot, because the previous one ran too long
 volatile uint32_t loopLockLosses = 0;   // Times the lock to the current samples was lost
 volatile uint32_t loopTimeouts = 0;     // Times the wait for a sample pair gave up
+volatile uint32_t commandCount = 0;     // Commands received, shown by the L command (L itself is not counted)
+char lastCommand[8] = "none";           // The last command, its letter and the first five characters of its argument
+uint32_t lastCommandAtS = 0;            // Uptime when it arrived [s]
+float bootTarget = 0;                   // The hold target set at start-up, to see later whether it was changed
+void noteCommand(char id, const char* argument);
 Preferences nvs;                          // Settings kept in flash, they survive restarts and firmware updates
 int actId = ACT_ID;                       // Actuator ID in use, loaded from nvs at start-up
 volatile bool updateRequested = false;    // Set by the update command, acted on in loop()
